@@ -1,0 +1,35 @@
+{
+  "regulatory_dir": "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_ATAC/downstream_analyses_epoch1800_mEEE_pca25/rna_atac_regulatory_relaxed",
+  "links_csv": "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_ATAC/downstream_analyses_epoch1800_mEEE_pca25/rna_atac_regulatory_relaxed/significant_peak_gene_links.csv",
+  "all_links_csv": "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_ATAC/downstream_analyses_epoch1800_mEEE_pca25/rna_atac_regulatory_relaxed/peak_gene_correlations.csv",
+  "gene_tss_csv": "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_ATAC/downstream_analyses_epoch1800_mEEE_pca25/rna_atac_regulatory_relaxed/gene_tss_annotation.csv",
+  "output_dir": "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_ATAC/downstream_analyses_epoch1800_mEEE_pca25/target_gene_peak_locus_plot_wide",
+  "target_genes": [
+    "Meg3",
+    "Malat1",
+    "Meis2",
+    "Dlx6os1"
+  ],
+  "window_size": 150000,
+  "figure_width_inches": 22.0,
+  "figure_height_inches": 6.96,
+  "dpi": 300,
+  "font_sizes_points": {
+    "title": 15,
+    "track": 12,
+    "axis": 12,
+    "tick": 10,
+    "annotation": 10,
+    "target_gene": 11,
+    "gene": 10,
+    "peak_label": 9
+  },
+  "summary_csv": "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_ATAC/downstream_analyses_epoch1800_mEEE_pca25/target_gene_peak_locus_plot_wide/target_gene_locus_summary.csv",
+  "selected_links_csv": "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_ATAC/downstream_analyses_epoch1800_mEEE_pca25/target_gene_peak_locus_plot_wide/target_gene_locus_links.csv",
+  "figures": [
+    "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_ATAC/downstream_analyses_epoch1800_mEEE_pca25/target_gene_peak_locus_plot_wide/target_gene_locus_Meg3_significant.pdf",
+    "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_ATAC/downstream_analyses_epoch1800_mEEE_pca25/target_gene_peak_locus_plot_wide/target_gene_locus_Malat1_significant.pdf",
+    "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_ATAC/downstream_analyses_epoch1800_mEEE_pca25/target_gene_peak_locus_plot_wide/target_gene_locus_Meis2_significant.pdf",
+    "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_ATAC/downstream_analyses_epoch1800_mEEE_pca25/target_gene_peak_locus_plot_wide/target_gene_locus_Dlx6os1_significant.pdf"
+  ]
+}

@@ -6,7 +6,7 @@
 
 当前版本覆盖完整的主线流程：**数据预处理 → SSR 训练 → 聚类与指标评估 → UMAP/空间图 → 标准 H5AD 导出**。
 
-本版本不包含生物学下游分析脚本，包括 marker 基因筛选与 dotplot、GO/KEGG 富集、跨切片功能比较、调控网络、peak–gene 分析及论文专用图。它们仍保留在原开发项目中，尚未整理进入本仓库。翻译模型、实验支线、自动调参和范围评估入口也未纳入。
+本版本另包含整理后的论文下游分析：benchmark 汇总、marker/dotplot/空间表达、RNA–ADT 热图、cis gene–peak 关联和位点图、GO-BP/KEGG 与跨切片汇总、Y7_T 辅助解释及事后因子图谱。入口和复现边界见 [analysis/README.md](analysis/README.md)，图—数据—脚本对应关系见 [figure_manifest.yaml](analysis/figure_manifest.yaml)。翻译模型、废弃模型支线、自动调参和范围评估入口未纳入。
 
 ### 评估并不只计算 ARI
 
@@ -16,13 +16,16 @@
 - 生成按模型聚类着色的 UMAP 和空间分布 PDF；配置允许时，还可展示参考注释空间图。
 - 导出融合表示、聚类标签、评估信息及用于后续自定义分析的 H5AD。
 
-没有真实标签时跳过相应标签指标，不补造标签。空间指标计算失败时会记录日志并跳过，不能将缺失值视为有效得分。当前标准入口没有计算模态邻域 Jaccard；H5AD 中保留的相应接口不代表已经生成该指标。
+没有真实标签时跳过相应标签指标，不补造标签。空间指标计算失败时会记录日志并跳过，不能将缺失值视为有效得分。Y7_T 配置另启用模态邻域 Jaccard：比较 PCA 聚类前的 z_out 与标准预处理模态特征的欧氏 kNN（k=50、排除自身），不使用真实标签；其他配置默认不启用。
 
 ## 目录结构
 
 ```text
 BioSFIB/
-├── configs/                 # 按数据集分类的 32 份 SSR 配置
+├── configs/                 # 按输入样本组织的 33 份 SSR 配置
+├── analysis/                # 六类论文下游分析、说明和来源索引
+├── source_data/             # 已完成分析的小型表格快照及 SHA256
+├── CONFIGURATION_INVENTORY.md # 配置参数和输入版本说明
 ├── sf_model/
 │   ├── model/               # 双模态与三模态 SSR
 │   ├── preprocess/          # 各模态数据读取与标准预处理
@@ -72,12 +75,13 @@ install.packages("mclust")
 | `configs/mouse_spleen/` | 2 |
 | `configs/mouse_thymus/` | 4 |
 | `configs/simulation/` | 6 |
+| `configs/meta/` | 1 |
 
-`--dataset` 使用配置文件名（去掉 `.yaml`），例如 `e11_0_s1`、`human_lymph_A1`、`mouse_brain_ATAC`、`simulation6`。完整列表见 `configs/`。
+`--dataset` 使用配置文件名（去掉 `.yaml`），例如 `e11_0_s1`、`human_lymph1`、`mouse_brain_ATAC`、`simulation6`、`Y7_T`。33份模型配置的逐文件参数及 A1/D1 与编号淋巴输入的版本关系见 [配置清单](CONFIGURATION_INVENTORY.md)。
 
 各数据集的训练轮数、预处理、对齐方式、损失权重和聚类参数保留原有 SSR 配置，并非所有数据集使用完全相同的参数。它们属于历史结果的复现设置，不意味着经过独立验证集选择；任何基于 ARI 的 epoch 选择都应视为探索性分析。真实标签仅用于评估，不作为训练目标。
 
-数据、预处理缓存、权重、结果和日志均由 `.gitignore` 排除，本仓库只发布源码、配置和说明。
+原始数据、预处理缓存、权重、运行结果和日志由 `.gitignore` 排除；另在 `source_data/` 明确保留约13 MB已完成分析的表格/背景快照及来源校验值，不包含原始表达矩阵。
 
 ## 启动命令
 
@@ -112,7 +116,7 @@ python run_evaluate.py --config configs/misar/e11_0_s1.yaml
 | `predictions/embedding_joint.h5ad` | 原始 RNA 信息、融合表示、聚类标签和评估信息 |
 | `predictions/formal_metrics.json` | checkpoint、epoch、seed、ARI 及可用的 SSR 诊断摘要 |
 
-完整标签指标保存在 H5AD 的 `.uns["BioSFIB_evaluation"]["ground_truth_metrics"]`，空间指标和轮廓系数保存在 `.uns["BioSFIB_evaluation"]["spatial_clustering"]`；`formal_metrics.json` 并不包含全部指标。使用 `--output-suffix` 时，PDF、H5AD 和 JSON 文件名会追加相应后缀。
+完整标签指标保存在 H5AD 的 `.uns["BioSFIB_evaluation"]["ground_truth_metrics"]`，空间指标和轮廓系数保存在 `.uns["BioSFIB_evaluation"]["spatial_clustering"]`；JSON 还记录可用的空间指标和 Jaccard 摘要，但不包含全部标签指标。使用 `--output-suffix` 时，PDF、H5AD 和 JSON 文件名会追加相应后缀。
 
 ### H5AD 保存结构
 
@@ -133,9 +137,11 @@ python run_evaluate.py --config configs/misar/e11_0_s1.yaml
 可在 `sc_bridge` 环境中先执行：
 
 ```powershell
-python -m compileall -q sf_model scripts run_pipeline.py run_preprocess.py run_train.py run_evaluate.py
+python -m compileall -q sf_model scripts analysis run_pipeline.py run_preprocess.py run_train.py run_evaluate.py
 python run_pipeline.py --help
 python run_evaluate.py --help
+python -m analysis.markers.markers --help
+python -m analysis.benchmark.evaluate_benchmark --help
 ```
 
-随后至少验证一个双模态数据集和三模态 simulation6，并与对应的原 SSR 结果核对。仓库目前尚未指定开源许可证。
+随后至少验证一个双模态数据集、三模态 simulation6、Y7_T 与各下游模块，并与对应原结果核对。原32份模型配置和训练/预处理/聚类计算未因整理下游而修改；评估新增的 Jaccard 只在显式启用时计算。当前包尚缺历史 API 响应的公开归档、部分专用位点/外部证据材料和最终面板级命令核对，不能宣称已完成全部论文复现。仓库目前尚未指定开源许可证。

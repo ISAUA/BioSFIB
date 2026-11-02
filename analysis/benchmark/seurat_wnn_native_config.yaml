@@ -1,0 +1,105 @@
+# ============================================================================
+# Seurat WNN 原生二维 embedding 的独立评估配置。
+# 本文件不会调用 PCA；仅对 Seurat WNN 的 obsm['X_model'] 原始二维表示运行 mclust 和指标计算。
+# BioSFIB 仅用于提供统一 spot 顺序、真值标签和空间 KNN 图，不会在本流程中重新聚类。
+# 发布版：所有相对输入/输出路径均以仓库根目录为基准。
+# ============================================================================
+
+run:
+  seed: 42                                      # 全局随机种子；与主 benchmark 保持一致。
+  output_dir: results/benchmark_results_seurat_wnn      # Seurat WNN 原生二维评估的独立输出目录；不会覆盖主 benchmark 结果。
+  overwrite: false                              # 是否默认覆盖本流程自己的 CSV 与 manifest；通常保持 false。
+
+input:
+  biosfib_file_glob: "data/benchmark/{dataset}/BioSFIB/{slice}/*_BioSFIB_result.h5ad" # BioSFIB canonical 输入路径；用于真值、spot 顺序和空间坐标。
+  seurat_wnn_file_glob: "data/benchmark/{dataset}/seurat_wnn/{slice}/*_seurat_wnn_result.h5ad" # Seurat WNN 原生结果路径；仅读取这一模型。
+  embedding_key: X_model                         # Seurat WNN 原生融合 embedding 在 AnnData.obsm 中的键名。
+  expected_embedding_dim: 2                      # 必须严格为二维；若不是 2 则报错，避免混入不同表示。
+  require_identical_spatial_coordinates: true    # 是否要求 Seurat WNN 与 BioSFIB 的空间坐标逐点完全一致。
+
+pipeline:
+  pca:
+    enabled: false                               # 明确禁用 PCA；该流程直接使用 Seurat WNN 原始二维 embedding。
+  mclust:
+    model_name: EEE                              # mclust 协方差模型；与主 benchmark 保持一致。
+    seed: 42                                     # mclust 随机种子；与主 benchmark 保持一致。
+  spatial_moran:
+    n_neighbors: 6                               # Moran's I 使用的 canonical 空间 KNN 邻居数。
+  metrics:
+    required: [ARI, NMI, AMI, V_MEASURE, HOM, FMI, silhouette, cluster_morans_i] # 需计算的指标；无真值时外部指标标记为 not_applicable。
+    optional: []                                 # 可选指标列表；当前不额外计算。
+
+# 条件只描述 Seurat WNN 原生二维评估；不使用 pca20/pca25 名称，避免与主分析混淆。
+conditions:
+  native_2d_truth_k:
+    cluster_count: truth_n_classes               # K 使用 BioSFIB 文件中的独立真值类别数。
+    role: native_sensitivity                     # 结果角色；表示方法原生二维敏感性分析，不属于主 PCA benchmark。
+  native_2d_k6_primary:
+    cluster_count: 6                             # Human tonsil 主分析使用 K=6。
+    role: native_sensitivity                     # 结果角色；表示方法原生二维敏感性分析。
+    truth_key: reference_label                   # 外部指标仍以四类真实标签 reference_label 计算。
+  native_2d_k4_sensitivity:
+    cluster_count: 4                             # Human tonsil 敏感性分析使用 K=4。
+    role: native_sensitivity                     # 结果角色；表示方法原生二维敏感性分析。
+    truth_key: reference_label                   # 外部指标仍以四类真实标签 reference_label 计算。
+  native_2d_manual_k:
+    cluster_count: manual                        # K 必须由每个切片的 cluster_count_by_slice 显式指定。
+    role: native_sensitivity                     # 结果角色；表示方法原生二维敏感性分析。
+
+# truth_key 优先级：runs 条目 > conditions 条目 > datasets 条目。
+datasets:
+  simulation:
+    truth_key: reference_label                   # simulation 的独立真实标签列。
+    runs:
+      - condition: native_2d_truth_k             # 以真实类别数作为 K。
+
+  human_lymph:
+    truth_key: reference_label                   # human lymph 的独立真实标签列。
+    runs:
+      - condition: native_2d_truth_k             # 以真实类别数作为 K。
+
+  human_tonsil:
+    truth_key: reference_label                   # human tonsil 的四类真实参考注释列。
+    runs:
+      - condition: native_2d_k6_primary          # K=6 的主设定。
+      - condition: native_2d_k4_sensitivity      # K=4 的敏感性设定。
+
+  misar:
+    truth_key: reference_label                   # MISAR 的统一真实标签列。
+    runs:
+      - condition: native_2d_truth_k             # 以真实类别数作为 K；不再重复 PCA-20/PCA-25 两个条件。
+
+  mouse_brain_p22:
+    truth_key: reference_label                   # P22 存在真值时使用；无真值切片的外部指标自动标为 not_applicable。
+    runs:
+      - condition: native_2d_manual_k            # P22 使用与主 benchmark 相同的预先指定 K。
+        cluster_count_by_slice:
+          mouse_brain_ATAC: 18                    # ATAC 的 K=18。
+          mouse_brain_H3K27ac: 16                 # H3K27ac 的 K=16。
+          mouse_brain_H3K27me3: 18                # H3K27me3 的 K=18。
+          mouse_brain_H3K4me3: 18                 # H3K4me3 的 K=18。
+
+  mouse_spleen:
+    truth_key: null                               # 当前无独立真值；official_cluster 与 BioSFIB 聚类相同，不作为真值使用。
+    runs:
+      - condition: native_2d_manual_k            # 仅计算内部和空间指标；外部指标为 not_applicable。
+        cluster_count_by_slice:
+          mouse_spleen1: 5                        # spleen1 的预先指定 K=5。
+          mouse_spleen2: 5                        # spleen2 的预先指定 K=5。
+
+  mouse_thymus:
+    truth_key: null                               # 当前无独立真值；official_cluster 与 BioSFIB 聚类相同，不作为真值使用。
+    runs:
+      - condition: native_2d_manual_k            # 仅计算内部和空间指标；外部指标为 not_applicable。
+        cluster_count_by_slice:
+          mouse_thymus1: 8                        # thymus1 的预先指定 K=8。
+          mouse_thymus2: 8                        # thymus2 的预先指定 K=8。
+          mouse_thymus3: 8                        # thymus3 的预先指定 K=8。
+          mouse_thymus4: 8                        # thymus4 的预先指定 K=8。
+
+output:
+  metrics_csv: seurat_wnn_native_metrics.csv     # Seurat WNN 原生二维指标长表文件名。
+  manifest_json: seurat_wnn_native_manifest.json # 每个 Seurat WNN 切片×条件的运行状态和参数记录文件名。
+  predictions_dir: predictions                   # Spatial 与原生二维图所需轻量 prediction H5AD 的子目录名称。
+  prediction_h5ad:
+    save: true                                   # 是否保存 Seurat WNN 的轻量 prediction H5AD；包含 mclust 标签、空间坐标和原生二维坐标。

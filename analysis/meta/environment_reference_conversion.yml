@@ -1,0 +1,9 @@
+name: ccrcc_rds_convert
+channels:
+  - conda-forge
+dependencies:
+  - r-base=4.1
+  - r-seurat=4.0.5
+  - r-spatstat.core=2.4.4
+  - r-remotes
+  - r-hdf5r

@@ -1,0 +1,99 @@
+# Logical figure mapping; not a claim of pixel-identical final Illustrator layout.
+schema_version: 1
+date: "2026-11-02"
+status: source_groups_identified_panel_level_author_review_pending
+figure_number_basis: current_manuscript_records_not_legacy_latex
+execution_status: static_packaging_only_no_runtime_validation
+entries:
+  - id: framework
+    manuscript: "Main Fig. 1"
+    source: SSR architecture and manually assembled overview
+    code: [sf_model/model/ssr.py, sf_model/model/bio_sfinet.py]
+    status: manual_diagram_not_generated_by_analysis_scripts
+  - id: p22_main
+    manuscript: "Main Fig. 2; related P22 supplements"
+    configs: [configs/mouse_brain_p22/mouse_brain_ATAC.yaml]
+    inputs: [data/benchmark/mouse_brain_p22, results/MOUSE_BRAIN_P22/mouse_brain_ATAC/predictions/embedding_joint.h5ad]
+    code: [analysis/benchmark/evaluate_benchmark.py, analysis/benchmark/plot_benchmark_figures.py, analysis/benchmark/run_biosfib_marker_genes.py, analysis/markers/spatial_expression.py, analysis/gene_peak/locus_plot.py]
+    frozen_tables: [source_data/benchmark/benchmark_metrics_combined.csv, source_data/gene_peak/p22_atac]
+    locus: Meg3
+    output_root: results/analysis
+    status: source_tables_bundled_layout_manual
+  - id: misar_e15
+    manuscript: "Main Fig. 3; locus panel 3f"
+    configs: [configs/misar/e15_5_s1.yaml]
+    inputs: [data/benchmark/misar, results/MISAR/e15_5_s1/predictions/embedding_joint.h5ad]
+    code: [analysis/benchmark/plot_benchmark_figures.py, analysis/benchmark/plot_biosfib_recovered_domains.py, analysis/benchmark/run_biosfib_marker_genes.py, analysis/markers/spatial_expression.py, analysis/gene_peak/locus_plot.py]
+    frozen_tables: [source_data/gene_peak/misar_e15_5_s1]
+    locus: Neurod2
+    selection: ten_existing_links_not_recomputed_for_manuscript_replacement
+    caveat: old_Apc2_main_panel_is_superseded_not_a_second_current_result
+    status: current_locus_identified_manual_layout_and_literature_overlap_resources_pending
+  - id: misar_e18
+    manuscript: "Main Fig. 4"
+    configs: [configs/misar/e18_5_s1.yaml]
+    inputs: [data/benchmark/misar, results/MISAR/e18_5_s1/predictions/embedding_joint.h5ad]
+    code: [analysis/benchmark/plot_benchmark_figures.py, analysis/benchmark/plot_biosfib_recovered_domains.py, analysis/benchmark/run_biosfib_marker_genes.py, analysis/markers/spatial_expression.py]
+    output_root: results/analysis
+    status: source_scripts_identified_final_panel_parameters_require_author_review
+  - id: rna_protein
+    manuscript: "Main Fig. 5; additional lymph/tonsil supplements"
+    configs: [configs/human_tonsil/human_tonsil_slice1.yaml, configs/human_tonsil/human_tonsil_slice2.yaml, configs/human_tonsil/human_tonsil_slice3.yaml, configs/human_lymph/human_lymph1.yaml, configs/human_lymph/human_lymph2.yaml, configs/human_lymph/human_lymph3.yaml]
+    code: [analysis/benchmark/evaluate_benchmark.py, analysis/benchmark/plot_benchmark_figures.py, analysis/markers/rna_adt_heatmaps.py]
+    inputs: [data/benchmark/human_tonsil, data/benchmark/human_lymph]
+    status: legacy_A1_D1_input_versions_require_deduplication_review
+  - id: meta_main
+    manuscript: "Main Fig. 6"
+    configs: [configs/meta/Y7_T.yaml, analysis/meta/annotation.yaml]
+    code: [analysis/meta/annotate.py, analysis/meta/figures.py, analysis/meta/jaccard.py]
+    inputs: [data/raw/renal/Y7_T, data/raw/renal/ccRCC_scRNA_reference]
+    output_root: results/analysis/meta/Y7_T
+    caveat: four_classes_are_provisional_marker_guided_interpretations_not_ARI_truth
+    status: code_and_mapping_bundled_external_reference_download_metadata_pending
+  - id: enrichment_supplements
+    manuscript: "P22 enrichment supplements; MISAR Supplementary Fig. S8"
+    configs: [analysis/enrichment/p22_paired_modules.yaml, analysis/enrichment/p22_four_modalities.yaml, analysis/enrichment/misar_summary.yaml]
+    code: [analysis/enrichment/enrich.py, analysis/enrichment/p22_comparison.py, analysis/enrichment/misar_summary.py]
+    frozen_tables: [source_data/enrichment]
+    output_root: results/analysis/enrichment
+    caveat: reporting_term_subset_is_post_result_selection_full_term_overlap_is_separate
+    status: summary_tables_bundled_original_API_responses_not_bundled
+  - id: igfbpl1
+    manuscript: "Supplementary Fig. S6; Note S2/S4"
+    configs: [configs/misar/e13_5_s2.yaml]
+    code: [analysis/gene_peak/associations.py, analysis/gene_peak/locus_plot.py]
+    reported_protocol:
+      n_spots: 2183
+      tss_window_bp: 150000
+      min_detection_fraction: 0.01
+      n_pairs_for_BH: 401316
+      fdr_cutoff: 0.05
+      extra_abs_r_cutoff: 0.0
+      displayed_links: 10
+    caveat: generic_default_max_links_200000_is_not_this_protocol
+    status: dedicated_frozen_source_tables_not_located_in_packaged_results
+  - id: additional_tissues
+    manuscript: "Spleen/thymus supplementary comparisons"
+    config_directories: [configs/mouse_spleen, configs/mouse_thymus]
+    code: [analysis/benchmark/evaluate_benchmark.py, analysis/benchmark/plot_benchmark_figures.py]
+    status: source_scripts_and_model_configs_bundled_external_H5AD_required
+  - id: factor_atlas
+    manuscript: "Supplementary Fig. S14"
+    configs: [configs/meta/Y7_T.yaml]
+    code: [analysis/factors/atlas.py]
+    dependencies: [meta_main]
+    caveat: posthoc_PCA_ridge_factors_not_native_trained_shared_private_topics
+    status: original_rules_preserved_runtime_regression_pending
+  - id: simulation
+    manuscript: "Simulation supplements; tri-modal Supplementary Fig. S15"
+    config_directories: [configs/simulation]
+    code: [run_pipeline.py, analysis/benchmark/evaluate_benchmark.py, analysis/benchmark/plot_benchmark_figures.py]
+    caveat: simulation6_is_tri_modal_simulation_not_a_second_real_tissue
+    status: six_configs_included_runtime_regression_pending
+pending_materials:
+  - Exact final panel-to-command parameter manifest and manual Illustrator transformations.
+  - Public acquisition links and versions for third-party result H5AD and renal snRNA reference.
+  - Historical gProfiler response cache archive and stable accession.
+  - Igfbpl1 dedicated frozen results and original parameter receipt.
+  - Neurod2 external interval-overlap code, input supplementary table and genome-build audit.
+  - User-run syntax/import, checkpoint compatibility and numerical regressions.

@@ -1,0 +1,3 @@
+# Install core requirements first; META optional environments are separate.
+-r ../requirements.txt
+requests

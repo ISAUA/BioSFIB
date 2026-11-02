@@ -1,0 +1,6 @@
+source_cell_type,spatialmeta_four_class,decision,notes
+EC,Endo,reviewed,Official broad endothelial-cell label in the Hu et al. reference.
+Malignant,Mal,reviewed,Official broad malignant-cell label in the Hu et al. reference.
+Myeloid,Imm,reviewed,Official broad immune-cell label in the Hu et al. reference.
+Stromal,Stro,reviewed,Official broad stromal-cell label in the Hu et al. reference.
+T & NK,Imm,reviewed,Official broad immune-cell label in the Hu et al. reference.

@@ -1,0 +1,100 @@
+{
+  "status": "ok",
+  "analysis": "cluster-wise RNA ORA",
+  "created_utc": "2026-07-23T05:06:51.580764+00:00",
+  "dataset_key": "misar_e18_5_s2",
+  "organism": "mmusculus",
+  "sources": [
+    "GO:BP",
+    "KEGG"
+  ],
+  "api_url": "https://biit.cs.ut.ee/gprofiler/api/gost/profile/",
+  "database_versions": [
+    "e114_eg62_p19_27110d83"
+  ],
+  "offline_from_cache": false,
+  "parameters": {
+    "background_min_fraction": 0.01,
+    "marker_padj_cutoff": 0.01,
+    "marker_logfc_min": 0.0,
+    "min_query_genes": 10,
+    "max_query_genes": 50,
+    "min_term_size": 10,
+    "max_term_size": 500,
+    "fdr_cutoff": 0.05,
+    "correction": "Benjamini-Hochberg FDR",
+    "domain_scope": "custom",
+    "go_redundancy_jaccard": 0.7
+  },
+  "inputs": {
+    "config": "source_archive/SF_Project/configs/best_results_20260623/MISAR/config_e18_5_s2_rerun_epoch1300.yaml",
+    "config_sha256": "84df0b42965736d71f0baf6c107802875ae4ded5000fc42473a163a90afe44f6",
+    "marker_csv": "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s2/downstream_analyses_epoch1300/marker_genes/top50_marker_genes_by_cluster.csv",
+    "marker_csv_sha256": "f22c83bcc75449630563fa0fa3f78f895d6f1f8214f631126cc6c8cbd376b8da",
+    "marker_schema": {
+      "gene_column": "Gene",
+      "cluster_column": "Cluster",
+      "padj_column": "P_value_adj",
+      "logfc_column": "LogFoldChange",
+      "n_input_rows": 737,
+      "n_filtered_rows": 625
+    },
+    "raw_background_source": "source_archive/SF_Project/data/raw/misar/misar_e18-5-s2/adata_RNA.h5ad",
+    "background_details": {
+      "n_spots": 2248,
+      "n_features": 32285,
+      "min_spots": 23,
+      "mode": "expressed_in_min_fraction",
+      "min_fraction": 0.01
+    },
+    "background_gene_file": "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/expressed_rna_background.txt",
+    "background_gene_file_sha256": "5cc069a9f076e7b13f6f4638706f894bd09d607f71044dacf62332ce063fb85d",
+    "module_map": null,
+    "module_map_sha256": null
+  },
+  "counts": {
+    "background_genes": 15626,
+    "clusters_seen": 16,
+    "cluster_status": {
+      "ready": 16
+    },
+    "all_terms": 15795,
+    "significant_terms": 1753,
+    "plot_terms": 75
+  },
+  "outputs": {
+    "input_qc": "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/enrichment_input_qc.csv",
+    "all_results": "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/enrichment_all_results.csv",
+    "significant_results": "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/enrichment_significant_results.csv",
+    "plot_data": "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/enrichment_plot_data.csv",
+    "figures": [
+      "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/go_bp_enrichment_dotplot.pdf",
+      "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/go_bp_enrichment_dotplot.png",
+      "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/kegg_enrichment_dotplot.pdf",
+      "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/kegg_enrichment_dotplot.png"
+    ],
+    "cached_responses": [
+      "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/api_cache/2bda227db1f56b583618cb11e37c6b973df6312a18de221ab53963f91af3d757.response.json",
+      "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/api_cache/9a4452a8fb1ca038b2925a1a5690a688486fe63c7b0c326bf74559c8b8e5a6c5.response.json",
+      "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/api_cache/11668b5f0a45bd567f55a47894fe276ddc79b76cb1b30be82b887bdc1cc40197.response.json",
+      "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/api_cache/5f459e6d371543073b2f688781cbe9108672484e4b65bfd92546980fc7c4a0ec.response.json",
+      "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/api_cache/00ec9ea88da3f4fe184b592913df9d41786066badfcb1cbec7b526369709e98e.response.json",
+      "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/api_cache/0cfc878026839328f449c1c2dbfbc70fd5f63abe6b5c83659ef6664be4f5028d.response.json",
+      "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/api_cache/1f46bef11cfb66ca19a033789d66b20c1f5e7c90781479414f4bce88cac8b96f.response.json",
+      "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/api_cache/e3cbd7ecfabc539d64804c608deb65b96b0e73ca0c27437afcbbc4ed9faaf7cc.response.json",
+      "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/api_cache/26d7a559152d7fa12411870f1935f179aa775152ed67c393040ba948e362e4e9.response.json",
+      "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/api_cache/426c81bbcbcbdc6ce0e9eb4c05db65a846cde570f63f8ee4abfd543af4068f5c.response.json",
+      "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/api_cache/7ffff102af3fbeb36cfeefe4323b7fd8e450c8b866c214486f9c82564ec88838.response.json",
+      "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/api_cache/ce94fc3aea1a290c16616410c43074091eec528c4251b63c15046a4acb27b801.response.json",
+      "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/api_cache/07f45dfb40dba59ce4e1165ec085fb10a085a54f7aaed0a17e403e18c75c3a7a.response.json",
+      "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/api_cache/6b761147c89e6e15a455428e077440f7ccd71e75c0174729f5ee3bc883f92d90.response.json",
+      "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/api_cache/42f6df09dd4af27f6de62e6718e0ee0d99fe08dc31eb97220d82c203cd41b513.response.json",
+      "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/api_cache/2f56693766616689b1d917dce25d210382f69b5d0a74e20561448bf2b52bc6c1.response.json"
+    ]
+  },
+  "warnings": [],
+  "runtime": {
+    "python": "3.9.18 (main, Sep 11 2023, 14:09:26) [MSC v.1916 64 bit (AMD64)]",
+    "platform": "Windows-10-10.0.26100-SP0"
+  }
+}

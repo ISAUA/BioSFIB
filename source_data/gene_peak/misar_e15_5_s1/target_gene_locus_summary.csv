@@ -1,0 +1,9 @@
+target_gene,status,chrom,tss,n_links,n_significant_links,n_candidate_links
+Dazap1,ok,chr10,80261486,10,10,0
+Dlk1,ok,chr12,109452823,10,10,0
+Neurod2,ok,chr11,98329648,10,10,0
+Apc2,ok,chr10,80295977,10,10,0
+Hist1h2ap,ok,chr13,21833507,10,10,0
+Ptprs,ok,chr17,56476483,10,10,0
+Airn,ok,chr17,12741311,10,10,0
+Hist1h1e,ok,chr13,23622558,10,10,0

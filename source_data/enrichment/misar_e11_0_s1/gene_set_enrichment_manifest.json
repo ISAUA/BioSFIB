@@ -1,0 +1,100 @@
+{
+  "status": "ok",
+  "analysis": "cluster-wise RNA ORA",
+  "created_utc": "2026-08-07T04:52:15.115934+00:00",
+  "dataset_key": "misar_e11_0_s1",
+  "organism": "mmusculus",
+  "sources": [
+    "GO:BP",
+    "KEGG"
+  ],
+  "api_url": "https://biit.cs.ut.ee/gprofiler/api/gost/profile/",
+  "database_versions": [
+    "e114_eg62_p19_27110d83"
+  ],
+  "offline_from_cache": true,
+  "parameters": {
+    "background_min_fraction": 0.01,
+    "marker_padj_cutoff": 0.01,
+    "marker_logfc_min": 0.0,
+    "min_query_genes": 10,
+    "max_query_genes": 50,
+    "min_term_size": 10,
+    "max_term_size": 500,
+    "fdr_cutoff": 0.05,
+    "correction": "Benjamini-Hochberg FDR",
+    "domain_scope": "custom",
+    "go_redundancy_jaccard": 0.7
+  },
+  "inputs": {
+    "config": "source_archive/SF_Project/configs/best_results_20260623/MISAR/config_e11_0_s1_rerun_epoch1300.yaml",
+    "config_sha256": "13e774cb0a76f9cea26fc0ae7a465b3422d8c1355867cf29a7eec580346bb6da",
+    "marker_csv": "source_archive/SF_Project/results/best_results_20260623/MISAR/e11_0_s1/downstream_analyses_epoch1300/marker_genes/top50_marker_genes_by_cluster.csv",
+    "marker_csv_sha256": "c807cfe58da585e266497cc4419ce6698b3e5bf0291637dccf4adabfd04c8af9",
+    "marker_schema": {
+      "gene_column": "Gene",
+      "cluster_column": "Cluster",
+      "padj_column": "P_value_adj",
+      "logfc_column": "LogFoldChange",
+      "n_input_rows": 356,
+      "n_filtered_rows": 258,
+      "n_input_clusters": 8,
+      "n_filtered_clusters": 7,
+      "clusters_without_eligible_markers": [
+        "8"
+      ]
+    },
+    "raw_background_source": "source_archive/SF_Project/data/raw/misar/misar_e11_0-s1/adata_RNA.h5ad",
+    "background_details": {
+      "n_spots": 1263,
+      "n_features": 32285,
+      "min_spots": 13,
+      "mode": "expressed_in_min_fraction",
+      "min_fraction": 0.01
+    },
+    "background_gene_file": "source_archive/SF_Project/results/best_results_20260623/MISAR/e11_0_s1/downstream_analyses_epoch1300/rna_go_kegg_enrichment/expressed_rna_background.txt",
+    "background_gene_file_sha256": "02a3147852b1428df9e0cdf17d3c909667028c2fe8c3ef6b148e041951104dc9",
+    "module_map": null,
+    "module_map_sha256": null
+  },
+  "counts": {
+    "background_genes": 14706,
+    "clusters_seen": 8,
+    "cluster_status": {
+      "ready": 6,
+      "insufficient_genes": 1,
+      "no_eligible_positive_markers": 1
+    },
+    "all_terms": 6777,
+    "significant_terms": 873,
+    "plot_terms": 29
+  },
+  "outputs": {
+    "input_qc": "source_archive/SF_Project/results/best_results_20260623/MISAR/e11_0_s1/downstream_analyses_epoch1300/rna_go_kegg_enrichment/enrichment_input_qc.csv",
+    "all_results": "source_archive/SF_Project/results/best_results_20260623/MISAR/e11_0_s1/downstream_analyses_epoch1300/rna_go_kegg_enrichment/enrichment_all_results.csv",
+    "significant_results": "source_archive/SF_Project/results/best_results_20260623/MISAR/e11_0_s1/downstream_analyses_epoch1300/rna_go_kegg_enrichment/enrichment_significant_results.csv",
+    "plot_data": "source_archive/SF_Project/results/best_results_20260623/MISAR/e11_0_s1/downstream_analyses_epoch1300/rna_go_kegg_enrichment/enrichment_plot_data.csv",
+    "figures": [
+      "source_archive/SF_Project/results/best_results_20260623/MISAR/e11_0_s1/downstream_analyses_epoch1300/rna_go_kegg_enrichment/go_bp_enrichment_dotplot.pdf",
+      "source_archive/SF_Project/results/best_results_20260623/MISAR/e11_0_s1/downstream_analyses_epoch1300/rna_go_kegg_enrichment/go_bp_enrichment_dotplot.png",
+      "source_archive/SF_Project/results/best_results_20260623/MISAR/e11_0_s1/downstream_analyses_epoch1300/rna_go_kegg_enrichment/kegg_enrichment_dotplot.pdf",
+      "source_archive/SF_Project/results/best_results_20260623/MISAR/e11_0_s1/downstream_analyses_epoch1300/rna_go_kegg_enrichment/kegg_enrichment_dotplot.png"
+    ],
+    "cached_responses": [
+      "source_archive/SF_Project/results/best_results_20260623/MISAR/e11_0_s1/downstream_analyses_epoch1300/rna_go_kegg_enrichment/api_cache/6ed591a5417e5d05526d9693c269b22fa5d8baaf286b6f6762e8e7fffc2ac275.response.json",
+      "source_archive/SF_Project/results/best_results_20260623/MISAR/e11_0_s1/downstream_analyses_epoch1300/rna_go_kegg_enrichment/api_cache/fcd7f3b105321c044f03353c593e942db322f43a717b3d18d773e4ccd400e2f0.response.json",
+      "source_archive/SF_Project/results/best_results_20260623/MISAR/e11_0_s1/downstream_analyses_epoch1300/rna_go_kegg_enrichment/api_cache/918d8ca5564fefb3aeb25eac366bdc9fcc844a1556cdfb858509b894d4e76edd.response.json",
+      "source_archive/SF_Project/results/best_results_20260623/MISAR/e11_0_s1/downstream_analyses_epoch1300/rna_go_kegg_enrichment/api_cache/4548696e2ba175ffe32d8ec2bb4d1ee923f6b5c077c2ebf84a6a124a904ce10e.response.json",
+      "source_archive/SF_Project/results/best_results_20260623/MISAR/e11_0_s1/downstream_analyses_epoch1300/rna_go_kegg_enrichment/api_cache/cf4604a4eab4d121f6d8ba0582bb8d09973b815a50ea2d6266c9bc02954885be.response.json",
+      "source_archive/SF_Project/results/best_results_20260623/MISAR/e11_0_s1/downstream_analyses_epoch1300/rna_go_kegg_enrichment/api_cache/d791fc66c1d804f36ee6a39d01e8524298e958ed56b374c60a04fa54b9009b26.response.json"
+    ]
+  },
+  "warnings": [
+    "cluster_1: insufficient_genes",
+    "cluster_8: no_eligible_positive_markers"
+  ],
+  "runtime": {
+    "python": "3.9.18 (main, Sep 11 2023, 14:09:26) [MSC v.1916 64 bit (AMD64)]",
+    "platform": "Windows-10-10.0.26100-SP0"
+  }
+}

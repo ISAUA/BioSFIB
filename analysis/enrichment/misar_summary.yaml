@@ -1,0 +1,135 @@
+# Descriptive reporting configuration for the MISAR developmental enrichment
+# supplement. These terms were frozen after reviewing the completed enrichment
+# results and are used only for the representative dot matrices. Exact Jaccard
+# summaries are computed from every FDR-significant term, not from this subset.
+analysis:
+  title: MISAR developmental enrichment consistency
+  claim: Conserved neural, adhesion, glial, and extracellular-matrix programs coexist with stage- and slice-associated enrichment from E11.0 to E18.5.
+  role: supplementary_descriptive_robustness
+  selection_status: post_result_reporting_selection
+  selection_note: Representative terms were selected after enrichment inspection for visualization and must not be described as preregistered or used as the universe for overlap statistics.
+
+datasets:
+  - key: misar_e11_0_s1
+    stage: E11.0
+    stage_value: 11.0
+    slice: S1
+    label: E11.0 S1
+    results: source_data/enrichment/misar_e11_0_s1/enrichment_significant_results.csv
+    qc: source_data/enrichment/misar_e11_0_s1/enrichment_input_qc.csv
+    manifest: source_data/enrichment/misar_e11_0_s1/gene_set_enrichment_manifest.json
+
+  - key: misar_e11_0_s2
+    stage: E11.0
+    stage_value: 11.0
+    slice: S2
+    label: E11.0 S2
+    results: source_data/enrichment/misar_e11_0_s2/enrichment_significant_results.csv
+    qc: source_data/enrichment/misar_e11_0_s2/enrichment_input_qc.csv
+    manifest: source_data/enrichment/misar_e11_0_s2/gene_set_enrichment_manifest.json
+
+  - key: misar_e13_5_s1
+    stage: E13.5
+    stage_value: 13.5
+    slice: S1
+    label: E13.5 S1
+    results: source_data/enrichment/misar_e13_5_s1/enrichment_significant_results.csv
+    qc: source_data/enrichment/misar_e13_5_s1/enrichment_input_qc.csv
+    manifest: source_data/enrichment/misar_e13_5_s1/gene_set_enrichment_manifest.json
+
+  - key: misar_e13_5_s2
+    stage: E13.5
+    stage_value: 13.5
+    slice: S2
+    label: E13.5 S2
+    results: source_data/enrichment/misar_e13_5_s2/enrichment_significant_results.csv
+    qc: source_data/enrichment/misar_e13_5_s2/enrichment_input_qc.csv
+    manifest: source_data/enrichment/misar_e13_5_s2/gene_set_enrichment_manifest.json
+
+  - key: misar_e15_5_s1
+    stage: E15.5
+    stage_value: 15.5
+    slice: S1
+    label: E15.5 S1
+    results: source_data/enrichment/misar_e15_5_s1/enrichment_significant_results.csv
+    qc: source_data/enrichment/misar_e15_5_s1/enrichment_input_qc.csv
+    manifest: source_data/enrichment/misar_e15_5_s1/gene_set_enrichment_manifest.json
+
+  - key: misar_e15_5_s2
+    stage: E15.5
+    stage_value: 15.5
+    slice: S2
+    label: E15.5 S2
+    results: source_data/enrichment/misar_e15_5_s2/enrichment_significant_results.csv
+    qc: source_data/enrichment/misar_e15_5_s2/enrichment_input_qc.csv
+    manifest: source_data/enrichment/misar_e15_5_s2/gene_set_enrichment_manifest.json
+
+  - key: misar_e18_5_s1
+    stage: E18.5
+    stage_value: 18.5
+    slice: S1
+    label: E18.5 S1
+    results: source_data/enrichment/misar_e18_5_s1/enrichment_significant_results.csv
+    qc: source_data/enrichment/misar_e18_5_s1/enrichment_input_qc.csv
+    manifest: source_data/enrichment/misar_e18_5_s1/gene_set_enrichment_manifest.json
+
+  - key: misar_e18_5_s2
+    stage: E18.5
+    stage_value: 18.5
+    slice: S2
+    label: E18.5 S2
+    results: source_data/enrichment/misar_e18_5_s2/enrichment_significant_results.csv
+    qc: source_data/enrichment/misar_e18_5_s2/enrichment_input_qc.csv
+    manifest: source_data/enrichment/misar_e18_5_s2/gene_set_enrichment_manifest.json
+
+term_groups:
+  "GO:BP":
+    - label: Conserved neural programs
+      short_label: Conserved neural
+      color: "#355C8A"
+      terms:
+        - {id: "GO:0007416", label: Synapse assembly}
+        - {id: "GO:0050804", label: Modulation of chemical synaptic transmission}
+        - {id: "GO:0021537", label: Telencephalon development}
+        - {id: "GO:0001764", label: Neuron migration}
+        - {id: "GO:0007411", label: Axon guidance}
+        - {id: "GO:0021953", label: Central nervous system neuron differentiation}
+
+    - label: Glial and extracellular-matrix programs
+      short_label: Glial / ECM
+      color: "#2A7F62"
+      terms:
+        - {id: "GO:0042063", label: Gliogenesis}
+        - {id: "GO:0014003", label: Oligodendrocyte development}
+        - {id: "GO:0030198", label: Extracellular matrix organization}
+
+    - label: Stage-associated programs
+      short_label: Stage-associated
+      color: "#8A5A9E"
+      terms:
+        - {id: "GO:0099504", label: Synaptic vesicle cycle}
+        - {id: "GO:0045931", label: Positive regulation of mitotic cell cycle}
+        - {id: "GO:0021756", label: Striatum development}
+
+  KEGG:
+    - label: Conserved guidance and adhesion pathways
+      short_label: Conserved guidance / adhesion
+      color: "#355C8A"
+      terms:
+        - {id: "KEGG:04360", label: Axon guidance}
+        - {id: "KEGG:04512", label: ECM-receptor interaction}
+        - {id: "KEGG:04514", label: Cell adhesion molecule (CAM) interaction}
+        - {id: "KEGG:04517", label: IgSF CAM signaling}
+        - {id: "KEGG:04518", label: Integrin signaling}
+        - {id: "KEGG:04151", label: PI3K-Akt signaling pathway}
+        - {id: "KEGG:04510", label: Focal adhesion}
+
+    - label: Stage- and slice-associated signaling pathways
+      short_label: Stage / slice-associated
+      color: "#B05A45"
+      terms:
+        - {id: "KEGG:04020", label: Calcium signaling pathway}
+        - {id: "KEGG:04724", label: Glutamatergic synapse}
+        - {id: "KEGG:04727", label: GABAergic synapse}
+        - {id: "KEGG:04728", label: Dopaminergic synapse}
+        - {id: "KEGG:04080", label: Neuroactive ligand-receptor interaction}

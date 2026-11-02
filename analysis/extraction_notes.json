@@ -1,0 +1,52 @@
+{
+  "sources": [
+    {
+      "kind": "selected marker/heatmap helper functions only; no old command entrypoint",
+      "published": "analysis/common/marker_helpers.py",
+      "source_sha256": "ba2428874e2b4e3bcdf1a50159813d14f88310194617d1b358c8b66c684a5aed",
+      "source": "SF_Project/scripts/entrypoints/experimental_branches/run_ccrcc_manuscript_panels_fgh.py"
+    },
+    {
+      "kind": "selected frozen inference/spot score helpers; strict checkpoint loading",
+      "published": "analysis/common/ssr_state.py",
+      "source_sha256": "9571629079ef66c53a4ff9dfcbd594fbccdcb9621f06728a4bc1585a1d5fa236",
+      "source": "SF_Project/scripts/pipeline/run_ssr_core_downstream.py"
+    },
+    {
+      "kind": "calculate_spamv_knn_jaccard function extracted without metric changes",
+      "published": "analysis/meta/jaccard.py",
+      "source_sha256": "491155cc4c1cc3cf3f48783e88ad1a11c4b599deeca425df529b4f0e8fb9bb98",
+      "source": "SF_Project/scripts/pipeline/run_evaluate.py"
+    },
+    {
+      "kind": "base flattened with spec001 child; final checkpoint filename and portable result paths",
+      "published": "configs/meta/Y7_T.yaml",
+      "source_sha256": "f41eb31ba96096713d9ce981094435d43d9928b1385d3089c33e8ef62999945b",
+      "source": "SF_Project/configs/best_results_20260623/META/y7_t_spatialmeta_20260812/_base_Y7_T_spatialmeta_ssr.yaml"
+    },
+    {
+      "kind": "formal child overrides, spectral reconstruction coefficient 0.01",
+      "published": "configs/meta/Y7_T.yaml",
+      "source_sha256": "2c1212d5ac726c7e775c7606475156c80c7d297a99999ca9ddcb9ede8d96d41b",
+      "source": "SF_Project/configs/best_results_20260623/META/y7_t_spatialmeta_20260812/config_Y7_T_spatialmeta_ssr_spec001.yaml"
+    }
+  ],
+  "new_glue": "analysis/gene_peak/export_scores.py verifies frozen embedding and exports the existing spot-score definition; no training or output selection",
+  "changes": [
+    "Project-root-relative paths and qualified local imports",
+    "Benchmark default evaluation consolidates seven standard methods; six available methods for spleen/thymus",
+    "Benchmark plots default to immutable bundled metrics; predictions come from newly generated results when requested",
+    "META figures export annotation-only spot table to avoid dependency on unreported gate figures",
+    "Gene-peak manifests additionally record existing effective parameters",
+    "Evaluator optionally computes original Jaccard metric when enabled, and exports available metric summaries",
+    "Removed an unused benchmark extension_grid configuration; all active fixed conditions and sensitivities retained",
+    "Public source metadata redacts machine-absolute paths; source_data/manifest.json records original and published checksums"
+  ],
+  "not_changed": [
+    "Original development workspace code and best results",
+    "Existing 32 model configurations",
+    "Training and preprocessing computations",
+    "Clustering and UMAP algorithms or random seeds"
+  ],
+  "runtime_validation": "independent_distribution_not_runtime_validated"
+}

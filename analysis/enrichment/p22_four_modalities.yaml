@@ -1,0 +1,41 @@
+# Pre-specified before H3K4me3/H3K27me3 enrichment results are observed.
+# The original two-modality map under configs/enrichment is retained so the
+# completed ATAC/H3K27ac manifests remain auditable against their exact input.
+# New assignments maximize coverage of the same expected RNA markers; ties are
+# resolved by their mean marker rank and score, without enrichment information.
+modules:
+  oligodendroglial_myelination:
+    label: Oligodendroglial / myelination
+    expected_markers: [Mbp, Plp1, Mobp, Mal, Mag]
+    clusters:
+      mouse_brain_ATAC: "12"
+      mouse_brain_H3K27ac: "12"
+      mouse_brain_H3K4me3: "5"
+      mouse_brain_H3K27me3: "1"
+
+  striatal_neuron:
+    label: Striatal neuron
+    expected_markers: [Pde10a, Rgs9, Gng7, Bcl11b]
+    clusters:
+      mouse_brain_ATAC: "2"
+      mouse_brain_H3K27ac: "11"
+      mouse_brain_H3K4me3: "11"
+      mouse_brain_H3K27me3: "8"
+
+  neurogenic_proliferative:
+    label: Neurogenic / proliferative
+    expected_markers: [Ccnd2, Sox4, Top2a]
+    clusters:
+      mouse_brain_ATAC: "17"
+      mouse_brain_H3K27ac: "14"
+      mouse_brain_H3K4me3: "13"
+      mouse_brain_H3K27me3: "17"
+
+  cortical_neuron:
+    label: Cortical neuron
+    expected_markers: [Rorb, Camk2n1, Mef2c, Nrgn]
+    clusters:
+      mouse_brain_ATAC: "5"
+      mouse_brain_H3K27ac: "3"
+      mouse_brain_H3K4me3: "17"
+      mouse_brain_H3K27me3: "10"

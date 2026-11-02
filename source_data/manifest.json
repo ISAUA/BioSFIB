@@ -1,0 +1,581 @@
+{
+  "created": "2026-11-02",
+  "policy": "Scientific tables retain original bytes. Fifteen metadata manifests replace machine-absolute paths with source_archive/ references. sha256/bytes describe published files; source_sha256/source_bytes retain original metadata provenance where transformed.",
+  "files": [
+    {
+      "file": "source_data/benchmark/benchmark_metrics_combined.csv",
+      "source": "benchmark_workspace/benchmark_results_combined/benchmark_metrics_combined.csv",
+      "bytes": 757719,
+      "sha256": "49956b8b5f12f3e72e2782db08ac9e916a651c0f9f0623598120a8708a445a9c"
+    },
+    {
+      "file": "source_data/enrichment/misar_e11_0_s1/enrichment_significant_results.csv",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e11_0_s1/downstream_analyses_epoch1300/rna_go_kegg_enrichment/enrichment_significant_results.csv",
+      "bytes": 216694,
+      "sha256": "7086b1b88feca95aa45d4bd3dae374b48bd7fb89e083f00d71801b993115d887"
+    },
+    {
+      "file": "source_data/enrichment/misar_e11_0_s1/enrichment_input_qc.csv",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e11_0_s1/downstream_analyses_epoch1300/rna_go_kegg_enrichment/enrichment_input_qc.csv",
+      "bytes": 2545,
+      "sha256": "cd39163bf04bfb14d6fb827d7272748980ac8f8408c1a8de238bd541fe886dd1"
+    },
+    {
+      "file": "source_data/enrichment/misar_e11_0_s1/expressed_rna_background.txt",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e11_0_s1/downstream_analyses_epoch1300/rna_go_kegg_enrichment/expressed_rna_background.txt",
+      "bytes": 114198,
+      "sha256": "02a3147852b1428df9e0cdf17d3c909667028c2fe8c3ef6b148e041951104dc9"
+    },
+    {
+      "file": "source_data/enrichment/misar_e11_0_s1/gene_set_enrichment_manifest.json",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e11_0_s1/downstream_analyses_epoch1300/rna_go_kegg_enrichment/gene_set_enrichment_manifest.json",
+      "bytes": 5558,
+      "sha256": "803242e8c6b87b82adead1c8baab1cf424e78bab675e8b5f6d4f4bbeceb707e1",
+      "source_sha256": "fe4bc2210120daa2f6d128aa6a4ea65ad9a0f0212e44956ab71c40d41bec2f78",
+      "source_bytes": 5881,
+      "transformation": "Absolute machine paths replaced by source_archive/ references; scientific fields unchanged."
+    },
+    {
+      "file": "source_data/enrichment/misar_e11_0_s1/input_markers.csv",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e11_0_s1/downstream_analyses_epoch1300/marker_genes/top50_marker_genes_by_cluster.csv",
+      "bytes": 26080,
+      "sha256": "c807cfe58da585e266497cc4419ce6698b3e5bf0291637dccf4adabfd04c8af9"
+    },
+    {
+      "file": "source_data/enrichment/misar_e11_0_s2/enrichment_significant_results.csv",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e11_0_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/enrichment_significant_results.csv",
+      "bytes": 422114,
+      "sha256": "3599f0bb9fc0553b615d5ebf6d7aeefa44f774bb3403e79657af165a831fa9ed"
+    },
+    {
+      "file": "source_data/enrichment/misar_e11_0_s2/enrichment_input_qc.csv",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e11_0_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/enrichment_input_qc.csv",
+      "bytes": 4218,
+      "sha256": "0dabbb913e025b3edcd29d88b888dc6b1721418ca912ec6c03e646a4d7112a45"
+    },
+    {
+      "file": "source_data/enrichment/misar_e11_0_s2/expressed_rna_background.txt",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e11_0_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/expressed_rna_background.txt",
+      "bytes": 115647,
+      "sha256": "03cf246914ebd0b07a56b6e6d2698209bee4c2c229395bad6f663f4caf288e28"
+    },
+    {
+      "file": "source_data/enrichment/misar_e11_0_s2/gene_set_enrichment_manifest.json",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e11_0_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/gene_set_enrichment_manifest.json",
+      "bytes": 6673,
+      "sha256": "2a76f4432e9814effa6d78947280e8614b0cf0aaa037a353968ef9a57d01a92e",
+      "source_sha256": "86cb2e5109a760a42e351eb2d09b398495680441afb1a2127dacdd6320559e41",
+      "source_bytes": 7091,
+      "transformation": "Absolute machine paths replaced by source_archive/ references; scientific fields unchanged."
+    },
+    {
+      "file": "source_data/enrichment/misar_e11_0_s2/input_markers.csv",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e11_0_s2/downstream_analyses_epoch1300/marker_genes/top50_marker_genes_by_cluster.csv",
+      "bytes": 42163,
+      "sha256": "3c3a3227b6312072084c90ca7c9032186cf20fbda8ed907cb9d82edc203afa09"
+    },
+    {
+      "file": "source_data/enrichment/misar_e13_5_s1/enrichment_significant_results.csv",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e13_5_s1/downstream_analyses_epoch1300/rna_go_kegg_enrichment/enrichment_significant_results.csv",
+      "bytes": 262746,
+      "sha256": "320d95fef969cd837031a6bf923cff93a366816862c1f619e29ffd3eb428e2c1"
+    },
+    {
+      "file": "source_data/enrichment/misar_e13_5_s1/enrichment_input_qc.csv",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e13_5_s1/downstream_analyses_epoch1300/rna_go_kegg_enrichment/enrichment_input_qc.csv",
+      "bytes": 4041,
+      "sha256": "8e1876c438d948500d30e62837759942d5a11ffdc118a583e66712834ae42dd3"
+    },
+    {
+      "file": "source_data/enrichment/misar_e13_5_s1/expressed_rna_background.txt",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e13_5_s1/downstream_analyses_epoch1300/rna_go_kegg_enrichment/expressed_rna_background.txt",
+      "bytes": 124291,
+      "sha256": "9f9a5688a518679982f605dd5bd41af4ee06a53f7712bd57bcd97812daffdbdd"
+    },
+    {
+      "file": "source_data/enrichment/misar_e13_5_s1/gene_set_enrichment_manifest.json",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e13_5_s1/downstream_analyses_epoch1300/rna_go_kegg_enrichment/gene_set_enrichment_manifest.json",
+      "bytes": 6272,
+      "sha256": "3bef705c388ac86c96cbb664b9441869859f870390525e79dcddddaa3f59cf1b",
+      "source_sha256": "c34e208b3c5638903fcda8171851c22d14aea888e9e83485617f2e0d469fb738",
+      "source_bytes": 6671,
+      "transformation": "Absolute machine paths replaced by source_archive/ references; scientific fields unchanged."
+    },
+    {
+      "file": "source_data/enrichment/misar_e13_5_s1/input_markers.csv",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e13_5_s1/downstream_analyses_epoch1300/marker_genes/top50_marker_genes_by_cluster.csv",
+      "bytes": 41678,
+      "sha256": "18097cb7d4d1cc86dd68a742ae691148c9c164d6467cb87135800beb4f8667af"
+    },
+    {
+      "file": "source_data/enrichment/misar_e13_5_s2/enrichment_significant_results.csv",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e13_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/enrichment_significant_results.csv",
+      "bytes": 467462,
+      "sha256": "0ac2467a2ae189626b3d1141c980350d621f4b8cee68f8c8dc83e9b26a446a89"
+    },
+    {
+      "file": "source_data/enrichment/misar_e13_5_s2/enrichment_input_qc.csv",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e13_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/enrichment_input_qc.csv",
+      "bytes": 5026,
+      "sha256": "bc594629329e17b9e59d4211660cbb3604330c6abb2d60d71468d2d60e9df2b1"
+    },
+    {
+      "file": "source_data/enrichment/misar_e13_5_s2/expressed_rna_background.txt",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e13_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/expressed_rna_background.txt",
+      "bytes": 130871,
+      "sha256": "ed2a3a22b4c439ac2c83e664528f51c2da028886dbdec3bb0a9d3db47dcb6cf5"
+    },
+    {
+      "file": "source_data/enrichment/misar_e13_5_s2/gene_set_enrichment_manifest.json",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e13_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/gene_set_enrichment_manifest.json",
+      "bytes": 7125,
+      "sha256": "70850acc86948b7dd1b59ddb62d4d8cc3aa2e7de18593b8e2b5b37bf40d2cf4c",
+      "source_sha256": "0c4fa25c5c437819d4fcaedfde37ae1566cc83b85ff8697ddf3708bc9291d1bf",
+      "source_bytes": 7600,
+      "transformation": "Absolute machine paths replaced by source_archive/ references; scientific fields unchanged."
+    },
+    {
+      "file": "source_data/enrichment/misar_e13_5_s2/input_markers.csv",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e13_5_s2/downstream_analyses_epoch1300/marker_genes/top50_marker_genes_by_cluster.csv",
+      "bytes": 52078,
+      "sha256": "db362f1c827f0aa4e824698e4363e4bf46fa692317240205026414f08efd5a7f"
+    },
+    {
+      "file": "source_data/enrichment/misar_e15_5_s1/enrichment_significant_results.csv",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e15_5_s1/downstream_analyses_epoch1300/rna_go_kegg_enrichment/enrichment_significant_results.csv",
+      "bytes": 296604,
+      "sha256": "40094c46ae5aacfa585fa5eed1b35d988408e9d4deb8c64031724e1934ab77ca"
+    },
+    {
+      "file": "source_data/enrichment/misar_e15_5_s1/enrichment_input_qc.csv",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e15_5_s1/downstream_analyses_epoch1300/rna_go_kegg_enrichment/enrichment_input_qc.csv",
+      "bytes": 4327,
+      "sha256": "bb57fdf7d7b07f940efde59fedd2b1eb2b389d9d102f958e10a0f5682d42bb4b"
+    },
+    {
+      "file": "source_data/enrichment/misar_e15_5_s1/expressed_rna_background.txt",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e15_5_s1/downstream_analyses_epoch1300/rna_go_kegg_enrichment/expressed_rna_background.txt",
+      "bytes": 132505,
+      "sha256": "afea44ab6da28efda69b56df1286af595efee8d8605e4f86fb80204a99e96e0f"
+    },
+    {
+      "file": "source_data/enrichment/misar_e15_5_s1/gene_set_enrichment_manifest.json",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e15_5_s1/downstream_analyses_epoch1300/rna_go_kegg_enrichment/gene_set_enrichment_manifest.json",
+      "bytes": 6457,
+      "sha256": "622421b86b0af71073a8b7fe920cfdfc26145b720628e4f1203c73a892c94414",
+      "source_sha256": "2b663931bcf88bf241d01854a190143882954743c4ac657b420de4021f66db65",
+      "source_bytes": 6875,
+      "transformation": "Absolute machine paths replaced by source_archive/ references; scientific fields unchanged."
+    },
+    {
+      "file": "source_data/enrichment/misar_e15_5_s1/input_markers.csv",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e15_5_s1/downstream_analyses_epoch1300/marker_genes/top50_marker_genes_by_cluster.csv",
+      "bytes": 42659,
+      "sha256": "f16e4dab588a9c999925c58a63f8a2085081c76f63a296b8eaf975cdbcc573eb"
+    },
+    {
+      "file": "source_data/enrichment/misar_e15_5_s2/enrichment_significant_results.csv",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e15_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/enrichment_significant_results.csv",
+      "bytes": 455625,
+      "sha256": "d3c3f24dbe85671c09499cc609cb260f6da3c9152ab48abc63692a895c1c5aa2"
+    },
+    {
+      "file": "source_data/enrichment/misar_e15_5_s2/enrichment_input_qc.csv",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e15_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/enrichment_input_qc.csv",
+      "bytes": 6026,
+      "sha256": "8ca435d850810ccf55bbeec9e120780fe3c872fa9e978fcfcc5661711fa2105c"
+    },
+    {
+      "file": "source_data/enrichment/misar_e15_5_s2/expressed_rna_background.txt",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e15_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/expressed_rna_background.txt",
+      "bytes": 127367,
+      "sha256": "9ab6e72617a7160057ec575ba1abc51fd929028a865da035fb6185a08cd5109f"
+    },
+    {
+      "file": "source_data/enrichment/misar_e15_5_s2/gene_set_enrichment_manifest.json",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e15_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/gene_set_enrichment_manifest.json",
+      "bytes": 7275,
+      "sha256": "cf670833eddb029da26ad1dcd4e2f3bf95d91e109a7aff62e113dca0444adbbd",
+      "source_sha256": "4ce86b7e6f4c60a7701c873d7c26bdf50b6eba6ba0edd725722fc09ba6260fa2",
+      "source_bytes": 7769,
+      "transformation": "Absolute machine paths replaced by source_archive/ references; scientific fields unchanged."
+    },
+    {
+      "file": "source_data/enrichment/misar_e15_5_s2/input_markers.csv",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e15_5_s2/downstream_analyses_epoch1300/marker_genes/top50_marker_genes_by_cluster.csv",
+      "bytes": 55435,
+      "sha256": "4c14f60f623366396168485e68ef77aa12369d5c403fcaaa6333becdc97c2f09"
+    },
+    {
+      "file": "source_data/enrichment/misar_e18_5_s1/enrichment_significant_results.csv",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e18_5_s1/downstream_analyses_epoch1300/rna_go_kegg_enrichment/enrichment_significant_results.csv",
+      "bytes": 323548,
+      "sha256": "02c87d0c07b47dd88ed0748da330a919f69893a05c2c1378d4953bd06c3b3780"
+    },
+    {
+      "file": "source_data/enrichment/misar_e18_5_s1/enrichment_input_qc.csv",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e18_5_s1/downstream_analyses_epoch1300/rna_go_kegg_enrichment/enrichment_input_qc.csv",
+      "bytes": 4307,
+      "sha256": "ddbf40988851b9dff36acb99455c0c1c707210fe41f89638a7dba5bb10e52fb0"
+    },
+    {
+      "file": "source_data/enrichment/misar_e18_5_s1/expressed_rna_background.txt",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e18_5_s1/downstream_analyses_epoch1300/rna_go_kegg_enrichment/expressed_rna_background.txt",
+      "bytes": 134205,
+      "sha256": "8b7e9cb1239b155271f9914999024ea0f2211bc6d435da15980ca37566b89b8a"
+    },
+    {
+      "file": "source_data/enrichment/misar_e18_5_s1/gene_set_enrichment_manifest.json",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e18_5_s1/downstream_analyses_epoch1300/rna_go_kegg_enrichment/gene_set_enrichment_manifest.json",
+      "bytes": 6716,
+      "sha256": "fa5c336796aa776b85b98c9990f60efe95f208e8a6f9479c5d0749598944bf09",
+      "source_sha256": "84d7cba47184bb763bcd710c0221cfb33404d12b6efa70d6c511fe70e0e5e247",
+      "source_bytes": 7153,
+      "transformation": "Absolute machine paths replaced by source_archive/ references; scientific fields unchanged."
+    },
+    {
+      "file": "source_data/enrichment/misar_e18_5_s1/input_markers.csv",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e18_5_s1/downstream_analyses_epoch1300/marker_genes/top50_marker_genes_by_cluster.csv",
+      "bytes": 45210,
+      "sha256": "29595ff7d4426afac6f1d7bfd84295ba630b6ea1b829f1570c0a6e1e1d2faf3b"
+    },
+    {
+      "file": "source_data/enrichment/misar_e18_5_s2/enrichment_significant_results.csv",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e18_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/enrichment_significant_results.csv",
+      "bytes": 428370,
+      "sha256": "0fbc6eefb6ca47a7df8069f16cc3295504c8350e2998db8c43a6b42334c54c23"
+    },
+    {
+      "file": "source_data/enrichment/misar_e18_5_s2/enrichment_input_qc.csv",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e18_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/enrichment_input_qc.csv",
+      "bytes": 5634,
+      "sha256": "b9b3d7c6be4bdde6b8b9ca1c52ed07b661b74dca91dfc968d77898787a089937"
+    },
+    {
+      "file": "source_data/enrichment/misar_e18_5_s2/expressed_rna_background.txt",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e18_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/expressed_rna_background.txt",
+      "bytes": 122335,
+      "sha256": "5cc069a9f076e7b13f6f4638706f894bd09d607f71044dacf62332ce063fb85d"
+    },
+    {
+      "file": "source_data/enrichment/misar_e18_5_s2/gene_set_enrichment_manifest.json",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e18_5_s2/downstream_analyses_epoch1300/rna_go_kegg_enrichment/gene_set_enrichment_manifest.json",
+      "bytes": 7498,
+      "sha256": "4be43ff951fc6a28de32a07ca935418003e58f3419a298555d3a94f4ab9f4058",
+      "source_sha256": "02e20cc93265e5fa7119cacedc8d38d8cc6b23ecf7eee3b92856198eddf35f3b",
+      "source_bytes": 8011,
+      "transformation": "Absolute machine paths replaced by source_archive/ references; scientific fields unchanged."
+    },
+    {
+      "file": "source_data/enrichment/misar_e18_5_s2/input_markers.csv",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e18_5_s2/downstream_analyses_epoch1300/marker_genes/top50_marker_genes_by_cluster.csv",
+      "bytes": 54606,
+      "sha256": "f22c83bcc75449630563fa0fa3f78f895d6f1f8214f631126cc6c8cbd376b8da"
+    },
+    {
+      "file": "source_data/enrichment/mouse_brain_ATAC/enrichment_significant_results.csv",
+      "source": "SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_ATAC/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/enrichment_significant_results.csv",
+      "bytes": 388309,
+      "sha256": "5d15c2fa9e309f24054996ba781a1d22933b3e0050e4f79928af8a08e7f4a76a"
+    },
+    {
+      "file": "source_data/enrichment/mouse_brain_ATAC/enrichment_input_qc.csv",
+      "source": "SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_ATAC/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/enrichment_input_qc.csv",
+      "bytes": 7504,
+      "sha256": "f527d9069bdee549831fe7e373b1ae0d624d4ef590b5fa528fbd1de0a186816e"
+    },
+    {
+      "file": "source_data/enrichment/mouse_brain_ATAC/expressed_rna_background.txt",
+      "source": "SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_ATAC/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/expressed_rna_background.txt",
+      "bytes": 86633,
+      "sha256": "2beb1122bb08cabded867c34b9b629c29c05280a850162b29290279ac5b7b321"
+    },
+    {
+      "file": "source_data/enrichment/mouse_brain_ATAC/gene_set_enrichment_manifest.json",
+      "source": "SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_ATAC/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/gene_set_enrichment_manifest.json",
+      "bytes": 8745,
+      "sha256": "504773c71bc07421a48ac548f7f4bff4432a8ccc8eadeab0d26b4f435da6ba51",
+      "source_sha256": "b2191a2558777cce2056854efbd3032aaca95d197301997ba2ce373e7dabc459",
+      "source_bytes": 9291,
+      "transformation": "Absolute machine paths replaced by source_archive/ references; scientific fields unchanged."
+    },
+    {
+      "file": "source_data/enrichment/mouse_brain_ATAC/input_markers.csv",
+      "source": "SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_ATAC/downstream_analyses_epoch1800_mEEE_pca25/marker_genes/top50_marker_genes_by_cluster.csv",
+      "bytes": 66695,
+      "sha256": "869c7cd35a8514c6a3dbf3782f236a3ac12b877b8fdb5f328e6fe8679308d5ef"
+    },
+    {
+      "file": "source_data/enrichment/mouse_brain_H3K27ac/enrichment_significant_results.csv",
+      "source": "SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K27ac/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/enrichment_significant_results.csv",
+      "bytes": 423969,
+      "sha256": "a7b7b3df35608ef46f9666e25de78a5af1ae55a9301187bbf6872efd36426f19"
+    },
+    {
+      "file": "source_data/enrichment/mouse_brain_H3K27ac/enrichment_input_qc.csv",
+      "source": "SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K27ac/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/enrichment_input_qc.csv",
+      "bytes": 6924,
+      "sha256": "bd2bc82689e5c4876ab223bf8c830b5447e2ebfe8e3f741dea26d92835ea46c4"
+    },
+    {
+      "file": "source_data/enrichment/mouse_brain_H3K27ac/expressed_rna_background.txt",
+      "source": "SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K27ac/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/expressed_rna_background.txt",
+      "bytes": 95935,
+      "sha256": "a2378856e3a7d37e304bb4eb659ac2beda2d497349cc74d66390ebb67d12c82a"
+    },
+    {
+      "file": "source_data/enrichment/mouse_brain_H3K27ac/gene_set_enrichment_manifest.json",
+      "source": "SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K27ac/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/gene_set_enrichment_manifest.json",
+      "bytes": 8326,
+      "sha256": "359c445c712d362703b1030ba86201a5c0e208f91d96d008c1477ef5618c097b",
+      "source_sha256": "697bd2611a1931ad75b48fb7ac6806e9bff1f4f37a1c0f1a7fa81bd0e73cfb56",
+      "source_bytes": 8834,
+      "transformation": "Absolute machine paths replaced by source_archive/ references; scientific fields unchanged."
+    },
+    {
+      "file": "source_data/enrichment/mouse_brain_H3K27ac/input_markers.csv",
+      "source": "SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K27ac/downstream_analyses_epoch1800_mEEE_pca25/marker_genes/top50_marker_genes_by_cluster.csv",
+      "bytes": 59358,
+      "sha256": "986571ca03bfce2dd83411ce19dae22b1e05ff1857b234c31f0cd0d651af0719"
+    },
+    {
+      "file": "source_data/enrichment/mouse_brain_H3K27me3/enrichment_significant_results.csv",
+      "source": "SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K27me3/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/enrichment_significant_results.csv",
+      "bytes": 361076,
+      "sha256": "a72437cd7231b599f396d4345233769d6526b6e8943793aab0233155aeed6adf"
+    },
+    {
+      "file": "source_data/enrichment/mouse_brain_H3K27me3/enrichment_input_qc.csv",
+      "source": "SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K27me3/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/enrichment_input_qc.csv",
+      "bytes": 7653,
+      "sha256": "7039700398fba21e82f157775b3af5e93025011fea371f48d40639e493ff5ac7"
+    },
+    {
+      "file": "source_data/enrichment/mouse_brain_H3K27me3/expressed_rna_background.txt",
+      "source": "SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K27me3/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/expressed_rna_background.txt",
+      "bytes": 102115,
+      "sha256": "642085b2287b518824a9d1acf2241eaf577b40b4827c6b246bdadb2411a27b02"
+    },
+    {
+      "file": "source_data/enrichment/mouse_brain_H3K27me3/gene_set_enrichment_manifest.json",
+      "source": "SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K27me3/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/gene_set_enrichment_manifest.json",
+      "bytes": 9005,
+      "sha256": "3447102a415279ee213cbe3b267e5b59d91c52d102d4562103d248a69b129ab8",
+      "source_sha256": "0362ab4735598f165226a135e3edc8c845a61523022a16c7b04c4292b45c4016",
+      "source_bytes": 9551,
+      "transformation": "Absolute machine paths replaced by source_archive/ references; scientific fields unchanged."
+    },
+    {
+      "file": "source_data/enrichment/mouse_brain_H3K27me3/input_markers.csv",
+      "source": "SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K27me3/downstream_analyses_epoch1800_mEEE_pca25/marker_genes/top50_marker_genes_by_cluster.csv",
+      "bytes": 66285,
+      "sha256": "1a9662b72cc116677fbefc83e5ea3b1ef610f8073aecd7c2b4fa904d93a0eb27"
+    },
+    {
+      "file": "source_data/enrichment/mouse_brain_H3K4me3/enrichment_significant_results.csv",
+      "source": "SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K4me3/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/enrichment_significant_results.csv",
+      "bytes": 483414,
+      "sha256": "ef91e91dac862077a1db43c84a838fe2dbaa293ce467d05c5cd77e6a76be659c"
+    },
+    {
+      "file": "source_data/enrichment/mouse_brain_H3K4me3/enrichment_input_qc.csv",
+      "source": "SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K4me3/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/enrichment_input_qc.csv",
+      "bytes": 7672,
+      "sha256": "a72a9c1bcb7768e3b02c2f4511999760ae1d7d2c93c07c1b7251863dd6e4cc73"
+    },
+    {
+      "file": "source_data/enrichment/mouse_brain_H3K4me3/expressed_rna_background.txt",
+      "source": "SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K4me3/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/expressed_rna_background.txt",
+      "bytes": 91477,
+      "sha256": "23ca420bf026a147f656438ceac7f69b9678d8c11ecb2069709066258b7184aa"
+    },
+    {
+      "file": "source_data/enrichment/mouse_brain_H3K4me3/gene_set_enrichment_manifest.json",
+      "source": "SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K4me3/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/gene_set_enrichment_manifest.json",
+      "bytes": 8975,
+      "sha256": "867929d0a7c30cfcc006dbb61b69be3718f863434c80bee461e22854e8999111",
+      "source_sha256": "88c88987efa4b1ed30c3802c1a5444ff85d98a9b56a75cecb1a2986ecf1c0df3",
+      "source_bytes": 9521,
+      "transformation": "Absolute machine paths replaced by source_archive/ references; scientific fields unchanged."
+    },
+    {
+      "file": "source_data/enrichment/mouse_brain_H3K4me3/input_markers.csv",
+      "source": "SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K4me3/downstream_analyses_epoch1800_mEEE_pca25/marker_genes/top50_marker_genes_by_cluster.csv",
+      "bytes": 66045,
+      "sha256": "e19f1a73e38464b7b8a992d54d6e9f8b4dd78e04c97737c20037ad0917e45c0f"
+    },
+    {
+      "file": "source_data/gene_peak/p22_atac/significant_peak_gene_links.csv",
+      "source": "SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_ATAC/downstream_analyses_epoch1800_mEEE_pca25/rna_atac_regulatory_relaxed/significant_peak_gene_links.csv",
+      "bytes": 95307,
+      "sha256": "583ae081d7150ed1fb432cfecf7c66cd69adea603cc3cec5b528124703468d5b"
+    },
+    {
+      "file": "source_data/gene_peak/p22_atac/target_gene_locus_links.csv",
+      "source": "SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_ATAC/downstream_analyses_epoch1800_mEEE_pca25/target_gene_peak_locus_plot_wide/target_gene_locus_links.csv",
+      "bytes": 9851,
+      "sha256": "fc722b0a9dc4f8302afe1418f72e3401f19a60ee6a7272924ed6df1f4b87517d"
+    },
+    {
+      "file": "source_data/gene_peak/p22_atac/target_gene_locus_summary.csv",
+      "source": "SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_ATAC/downstream_analyses_epoch1800_mEEE_pca25/target_gene_peak_locus_plot_wide/target_gene_locus_summary.csv",
+      "bytes": 208,
+      "sha256": "0e5d380da8d6d1960d967fca70b31967076e51d8e454bc75ee6d25fac7881e73"
+    },
+    {
+      "file": "source_data/gene_peak/p22_atac/target_gene_locus_manifest.json",
+      "source": "SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_ATAC/downstream_analyses_epoch1800_mEEE_pca25/target_gene_peak_locus_plot_wide/target_gene_locus_manifest.json",
+      "bytes": 2668,
+      "sha256": "62fa4fcccf45190dfc57981d0f4ac9179cf2026ebc7ffafd4f82eae333682b85",
+      "source_sha256": "a3a98df796e9440d8619687adb11ec105f79ebaa1ef6d2f0a9332689479aaabb",
+      "source_bytes": 2862,
+      "transformation": "Absolute machine paths replaced by source_archive/ references; scientific fields unchanged."
+    },
+    {
+      "file": "source_data/gene_peak/misar_e15_5_s1/significant_peak_gene_links.csv",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e15_5_s1/downstream_analyses_epoch1300_mEEE_pca25/rna_atac_regulatory_relaxed/significant_peak_gene_links.csv",
+      "bytes": 2077228,
+      "sha256": "f018ad1289eb04f0d661403ed3e5aedad522766a61a2e30e60f01db8b7a1413d"
+    },
+    {
+      "file": "source_data/gene_peak/misar_e15_5_s1/target_gene_locus_links.csv",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e15_5_s1/downstream_analyses_epoch1300_mEEE_pca25/target_gene_peak_locus_plot_wide/target_gene_locus_links.csv",
+      "bytes": 19737,
+      "sha256": "4f289191667066cd6f0ea27dc2de14d95d251fef174ba4bb4b64e78456257447"
+    },
+    {
+      "file": "source_data/gene_peak/misar_e15_5_s1/target_gene_locus_summary.csv",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e15_5_s1/downstream_analyses_epoch1300_mEEE_pca25/target_gene_peak_locus_plot_wide/target_gene_locus_summary.csv",
+      "bytes": 348,
+      "sha256": "c087ada496ed607073eaff81a569cc09600ac83db064c68e51f92eee7b6696bc"
+    },
+    {
+      "file": "source_data/gene_peak/misar_e15_5_s1/target_gene_locus_manifest.json",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e15_5_s1/downstream_analyses_epoch1300_mEEE_pca25/target_gene_peak_locus_plot_wide/target_gene_locus_manifest.json",
+      "bytes": 3302,
+      "sha256": "609a809db2dafc6c73ea4023ffb50627251d3276701ef0db14201c2c175eb000",
+      "source_sha256": "51850b4f2874a7e9f416af79c189e5dd3817ceb51a0b0c8faa4bb2cf1933ddc5",
+      "source_bytes": 3568,
+      "transformation": "Absolute machine paths replaced by source_archive/ references; scientific fields unchanged."
+    },
+    {
+      "file": "source_data/gene_peak/misar_e18_5_s1/significant_peak_gene_links.csv",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e18_5_s1/downstream_analyses_epoch1300/rna_atac_regulatory/significant_peak_gene_links.csv",
+      "bytes": 953,
+      "sha256": "6472de5fd92f8bf684810af0e3c62205133be8ea0763d368d3f9e223fde0d286"
+    },
+    {
+      "file": "source_data/gene_peak/misar_e18_5_s1/target_gene_locus_links.csv",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e18_5_s1/downstream_analyses_epoch1300/target_gene_peak_locus_plot_wide/target_gene_locus_links.csv",
+      "bytes": 1142,
+      "sha256": "bcbeaad3b61baeb67c2e95ac658d90e7244d8062b39519aca9eab22ba321b424"
+    },
+    {
+      "file": "source_data/gene_peak/misar_e18_5_s1/target_gene_locus_summary.csv",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e18_5_s1/downstream_analyses_epoch1300/target_gene_peak_locus_plot_wide/target_gene_locus_summary.csv",
+      "bytes": 200,
+      "sha256": "d55786af798042c7ac65b782831d8715756973fe8ab09cef6589cdbd5fb716d1"
+    },
+    {
+      "file": "source_data/gene_peak/misar_e18_5_s1/target_gene_locus_manifest.json",
+      "source": "SF_Project/results/best_results_20260623/MISAR/e18_5_s1/downstream_analyses_epoch1300/target_gene_peak_locus_plot_wide/target_gene_locus_manifest.json",
+      "bytes": 2315,
+      "sha256": "c863213c1c521c5d41634cfd3e1f61039fb9384075f43a8f9ec97e7940fed455",
+      "source_sha256": "e2450614728c2ab4ce667b55433c6f7b5108a07579f022ac749ca313bdc08767",
+      "source_bytes": 2509,
+      "transformation": "Absolute machine paths replaced by source_archive/ references; scientific fields unchanged."
+    },
+    {
+      "file": "source_data/gene_peak/gene_tss_annotation.csv",
+      "source": "SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_ATAC/downstream_analyses_epoch1800_mEEE_pca25/rna_atac_regulatory_relaxed/gene_tss_annotation.csv",
+      "bytes": 3600063,
+      "sha256": "46df16a3b699c519c435ba2a52e7b69c79517acd88057a0d4cddbc0c75cc4ba7"
+    }
+  ],
+  "not_bundled": [
+    {
+      "dataset": "misar_e11_0_s1",
+      "omitted": "api_cache",
+      "files": 12,
+      "bytes": 15243814.0,
+      "reason": "Historical gProfiler responses not bundled; required for exact offline API replay."
+    },
+    {
+      "dataset": "misar_e11_0_s2",
+      "omitted": "api_cache",
+      "files": 22,
+      "bytes": 27879639.0,
+      "reason": "Historical gProfiler responses not bundled; required for exact offline API replay."
+    },
+    {
+      "dataset": "misar_e13_5_s1",
+      "omitted": "api_cache",
+      "files": 20,
+      "bytes": 24843500.0,
+      "reason": "Historical gProfiler responses not bundled; required for exact offline API replay."
+    },
+    {
+      "dataset": "misar_e13_5_s2",
+      "omitted": "api_cache",
+      "files": 28,
+      "bytes": 31067808.0,
+      "reason": "Historical gProfiler responses not bundled; required for exact offline API replay."
+    },
+    {
+      "dataset": "misar_e15_5_s1",
+      "omitted": "api_cache",
+      "files": 22,
+      "bytes": 25820589.0,
+      "reason": "Historical gProfiler responses not bundled; required for exact offline API replay."
+    },
+    {
+      "dataset": "misar_e15_5_s2",
+      "omitted": "api_cache",
+      "files": 30,
+      "bytes": 37722333.0,
+      "reason": "Historical gProfiler responses not bundled; required for exact offline API replay."
+    },
+    {
+      "dataset": "misar_e18_5_s1",
+      "omitted": "api_cache",
+      "files": 24,
+      "bytes": 24574046.0,
+      "reason": "Historical gProfiler responses not bundled; required for exact offline API replay."
+    },
+    {
+      "dataset": "misar_e18_5_s2",
+      "omitted": "api_cache",
+      "files": 32,
+      "bytes": 36169863.0,
+      "reason": "Historical gProfiler responses not bundled; required for exact offline API replay."
+    },
+    {
+      "dataset": "mouse_brain_ATAC",
+      "omitted": "api_cache",
+      "files": 34,
+      "bytes": 43341741.0,
+      "reason": "Historical gProfiler responses not bundled; required for exact offline API replay."
+    },
+    {
+      "dataset": "mouse_brain_H3K27ac",
+      "omitted": "api_cache",
+      "files": 30,
+      "bytes": 42638792.0,
+      "reason": "Historical gProfiler responses not bundled; required for exact offline API replay."
+    },
+    {
+      "dataset": "mouse_brain_H3K27me3",
+      "omitted": "api_cache",
+      "files": 34,
+      "bytes": 44927397.0,
+      "reason": "Historical gProfiler responses not bundled; required for exact offline API replay."
+    },
+    {
+      "dataset": "mouse_brain_H3K4me3",
+      "omitted": "api_cache",
+      "files": 34,
+      "bytes": 44828922.0,
+      "reason": "Historical gProfiler responses not bundled; required for exact offline API replay."
+    }
+  ]
+}

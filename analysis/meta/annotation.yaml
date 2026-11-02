@@ -1,0 +1,65 @@
+protocol:
+  name: y7_t_spatialmeta_destvi_annotation_20260813
+  forbid_spamv: true
+  intended_use: biological_interpretation_only
+  prohibited_uses:
+    - model_training
+    - checkpoint_selection
+    - cluster_number_selection
+    - hyperparameter_tuning
+    - ground_truth_ari
+
+reference:
+  source_rds: data/raw/renal/ccRCC_scRNA_reference/snRNA.rds
+  source_md5: b2172bb2726a85d6c1ae64aa5315ee60
+  converted_h5ad: data/raw/renal/ccRCC_scRNA_reference/snRNA_seurat_converted.h5ad
+  prepared_h5ad: data/processed/renal/ccRCC_scRNA_reference/snRNA_reference_counts.h5ad
+  inventory_json: data/processed/renal/ccRCC_scRNA_reference/snRNA_reference_inventory.json
+  mapping_csv: analysis/meta/celltype_to_four_class.csv
+  cell_type_key: celltype
+
+spatial:
+  raw_st_h5ad: data/raw/renal/Y7_T/adata_joint_Y7_T_raw_ST.h5ad
+  fixed_result_h5ad: results/META/Y7_T/predictions/embedding_joint.h5ad
+  fixed_cluster_key: official_cluster
+  expected_spots: 1914
+  expected_clusters: 14
+
+feature_selection:
+  st_top_svg: 2000
+  st_spatial_neighbors: 6
+  st_normalization: scanpy_normalize_total_default_then_log1p
+  scrna_top_hvg: 2000
+  scrna_hvg_flavor: seurat_v3
+  minimum_intersection: 100
+
+destvi:
+  seed: 2024
+  condscvi_max_epochs: 250
+  destvi_max_epochs: 2000
+  accelerator: auto
+  devices: 1
+  resume_condscvi_if_available: true
+
+annotation:
+  allowed_classes: [Imm, Endo, Stro, Mal]
+  markers:
+    Imm: [CD8A, CD3D, CD74]
+    Endo: [CD34, PECAM1, APLN]
+    Stro: [COL3A1, ACTA2, COL1A1]
+    Mal: [NDUFA4L2, CNDP2, EGFR]
+  minimum_deconvolution_margin: 0.05
+  minimum_marker_margin: 0.0
+  uncertain_label: Mixed/Uncertain
+
+output:
+  directory: results/analysis/meta/Y7_T
+  annotated_h5ad: Y7_T_BioSFIB_K14_destvi_annotation.h5ad
+  cluster_evidence_csv: Y7_T_BioSFIB_K14_four_class_evidence.csv
+  spot_proportions_csv: Y7_T_DestVI_spot_proportions.csv
+  feature_manifest_json: Y7_T_DestVI_feature_manifest.json
+  provenance_json: Y7_T_DestVI_annotation_provenance.json
+  annotation_map_png: Y7_T_BioSFIB_K14_four_class_map.png
+  annotation_map_pdf: Y7_T_BioSFIB_K14_four_class_map.pdf
+  marker_guided_map_png: Y7_T_BioSFIB_K14_marker_guided_four_class_map.png
+  marker_guided_map_pdf: Y7_T_BioSFIB_K14_marker_guided_four_class_map.pdf

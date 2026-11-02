@@ -1,0 +1,17 @@
+name: ccrcc_destvi
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+dependencies:
+  - python=3.12
+  - pytorch=2.5
+  - pytorch-cuda=12.1
+  - pip
+  - pip:
+      - scvi-tools==1.4.3
+      - scanpy==1.11.5
+      - scikit-misc==0.5.1
+      - PyYAML==6.0.2
+      - matplotlib==3.10.5
+      - seaborn==0.13.2

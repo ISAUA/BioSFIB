@@ -1,0 +1,35 @@
+{
+  "regulatory_dir": "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s1/downstream_analyses_epoch1300/rna_atac_regulatory",
+  "links_csv": "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s1/downstream_analyses_epoch1300/rna_atac_regulatory/significant_peak_gene_links.csv",
+  "all_links_csv": "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s1/downstream_analyses_epoch1300/rna_atac_regulatory/peak_gene_correlations.csv",
+  "gene_tss_csv": "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s1/downstream_analyses_epoch1300/rna_atac_regulatory/gene_tss_annotation.csv",
+  "output_dir": "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s1/downstream_analyses_epoch1300/target_gene_peak_locus_plot_wide",
+  "target_genes": [
+    "Gm29260",
+    "Pantr1",
+    "Satb2",
+    "Pou3f3"
+  ],
+  "window_size": 150000,
+  "figure_width_inches": 22.0,
+  "figure_height_inches": 6.96,
+  "dpi": 300,
+  "font_sizes_points": {
+    "title": 15,
+    "track": 9,
+    "axis": 9,
+    "tick": 8,
+    "annotation": 8,
+    "target_gene": 8,
+    "gene": 7,
+    "peak_label": 6
+  },
+  "summary_csv": "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s1/downstream_analyses_epoch1300/target_gene_peak_locus_plot_wide/target_gene_locus_summary.csv",
+  "selected_links_csv": "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s1/downstream_analyses_epoch1300/target_gene_peak_locus_plot_wide/target_gene_locus_links.csv",
+  "figures": [
+    "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s1/downstream_analyses_epoch1300/target_gene_peak_locus_plot_wide/target_gene_locus_Gm29260_significant.pdf",
+    "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s1/downstream_analyses_epoch1300/target_gene_peak_locus_plot_wide/target_gene_locus_Pantr1_significant.pdf",
+    "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s1/downstream_analyses_epoch1300/target_gene_peak_locus_plot_wide/target_gene_locus_Satb2_significant.pdf",
+    "source_archive/SF_Project/results/best_results_20260623/MISAR/e18_5_s1/downstream_analyses_epoch1300/target_gene_peak_locus_plot_wide/target_gene_locus_Pou3f3_significant.pdf"
+  ]
+}

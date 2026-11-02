@@ -1,0 +1,129 @@
+# BioSFIB 专用 marker gene 绘图配置。
+# 输入 H5AD 始终只读；脚本仅输出 PDF、marker CSV 和簇—组织匹配 CSV。
+
+default_analysis: misar_e18_5_s1  # 默认运行的分析名称；也可通过命令行 --analysis 指定。
+
+defaults:
+  cluster_h5ad: null  # 可选：聚类来源 H5AD；null 表示与 expression_h5ad 使用同一 BioSFIB 文件。
+  display_key: biosfib_matched_label  # 运行时临时写入 .obs 的展示列名称；不会保存回输入 H5AD。
+  matching:
+    ignored_truth_values: ['nan', 'na', 'none', '']  # 真实组织名中视作无效的文本；这些 spot 不参与 Hungarian 匹配。
+    show_cluster_id: false  # 已匹配簇的图中名称是否附加显示 Cluster 编号；false 时仅显示真实组织名称。
+    display_template_with_cluster: '{tissue} (Cluster {cluster})' # show_cluster_id=true 时已匹配簇的展示格式。
+    display_template_without_cluster: '{tissue}' # show_cluster_id=false 时已匹配簇的展示格式。
+    unmatched_template: 'Cluster {cluster} (unmatched)' # 未匹配簇的展示格式；仅用于映射 CSV 审计或 include_unmatched_clusters=true。
+    include_unmatched_clusters: false # 是否将未匹配簇纳入 marker 统计和绘图；false 时 PDF 不显示 unmatched，仅在映射 CSV 保留记录。
+    label_aliases: {} # 真实组织名到图中简写的映射；未列出的名称保持原样。
+  preprocess:
+    normalize_total: true  # 是否按 spot 总表达量归一化。
+    target_sum: 10000      # normalize_total 的目标总表达量。
+    log1p: true            # 归一化后是否执行 log1p。
+  marker_test:
+    method: wilcoxon       # Scanpy rank_genes_groups 方法；可选 wilcoxon、t-test 或 logreg。
+    top_n: 50              # 每个展示分组写入 marker CSV 的最多基因数。
+    pval_adj_cutoff: 0.01  # marker CSV 的校正 P 值阈值；设为 null 可不筛选。
+  plot:
+    dpi: 300               # marker 图 PDF 中栅格元素的输出 DPI。
+    dotplot_genes_per_group: 5 # dotplot 中每个展示分组显示的前 N 个 marker 基因。
+    dotplot_swap_axes: false # 是否交换 dotplot 的基因轴与组织标签轴；false 为默认横向布局，true 为纵向布局。
+    dotplot_figure_size: null # dotplot 画布宽高 [width, height]，单位英寸；null 由 Scanpy 自动决定。
+    dotplot_legend_position: right # dotplot 图例位置；right 使用 Scanpy 默认右侧布局，bottom 将点大小图例和颜色条移到主图下方。
+    dotplot_bottom_legend_y_shift: 0.0 # bottom 图例相对默认位置的纵向偏移，使用画布比例；负值向下、正值向上。
+    dendrogram: false      # dotplot 是否显示并按树状图重排分组；false 保持 BioSFIB Cluster 编号的固定顺序。
+    save_spatial_marker_map: false # 是否额外输出空间 marker 图；首个实例默认只输出 dotplot。
+    spatial_top_markers: 3 # 空间 marker 图中显示的 marker 基因数量。
+
+analyses:
+  misar_e18_5_s1:
+    expression_h5ad: data/benchmark/misar/BioSFIB/misar_e18-5-s1/misar_e18-5-s1_BioSFIB_result.h5ad # BioSFIB RNA 表达、聚类和真值注释所在的输入文件。
+    cluster_key: BioSFIB  # BioSFIB 原始 mclust 聚类列；不会被覆盖。
+    truth_annotation_key: Combined_Clusters_annotation # 真实组织/区域名称列；用于 Hungarian 匹配和展示命名。
+    output_dir: results/benchmark_figures/marker_genes/misar/misar_e18_5_s1 # 本实例的 PDF 与 CSV 输出目录。
+    matching:
+      label_aliases:
+        Diencephalon_and_hindbrain: Diencephalon # 仅用于图中展示的紧凑简写；匹配 CSV 仍保留完整真实标签。
+  misar_e15_5_s1:
+    expression_h5ad: data/benchmark/misar/BioSFIB/misar_e15-5-s1/misar_e15-5-s1_BioSFIB_result.h5ad # BioSFIB RNA 表达、聚类和真值注释所在的输入文件。
+    cluster_key: BioSFIB  # BioSFIB 原始 mclust 聚类列；不会被覆盖。
+    truth_annotation_key: Combined_Clusters_annotation # 真实组织/区域名称列；用于 Hungarian 匹配和展示命名。
+    output_dir: results/benchmark_figures/marker_genes/misar/misar_e15_5_s1 # 本实例的 PDF 与 CSV 输出目录。
+    plot:
+      dotplot_swap_axes: true # E15.5_S1 使用纵向 dotplot：组织标签横向排列，marker 基因纵向排列。
+      dotplot_figure_size: [6.4, 14.0] # 保持 14 英寸纵向高度，进一步压缩横向宽度，使组织列与 dot 点的水平间距更紧。
+      dotplot_legend_position: bottom # 将点大小图例和颜色条从右侧移到主图下方，减少横向占用。
+      dotplot_bottom_legend_y_shift: -0.055 # 将底部图例整体再下移约 0.77 英寸，避免与主图横轴标签重叠。
+    matching:
+      label_aliases:
+        Diencephalon_and_hindbrain: Diencephalon # 仅用于图中展示的紧凑简写；匹配 CSV 仍保留完整真实标签。
+  misar_e13_5_s1:
+    expression_h5ad: data/benchmark/misar/BioSFIB/misar_e13_5-s1/misar_e13_5-s1_BioSFIB_result.h5ad # BioSFIB RNA 表达、聚类和真值注释所在的输入文件；注意 e13 与 5 之间为下划线。
+    cluster_key: BioSFIB  # BioSFIB 原始 mclust 聚类列；不会被覆盖。
+    truth_annotation_key: Combined_Clusters_annotation # 真实组织/区域名称列；用于 Hungarian 匹配和展示命名。
+    output_dir: results/benchmark_figures/marker_genes/misar/misar_e13_5_s1 # 本实例的 PDF 与 CSV 输出目录。
+    matching:
+      label_aliases:
+        Diencephalon_and_hindbrain: Diencephalon # 仅用于图中展示的紧凑简写；匹配 CSV 仍保留完整真实标签。
+        Basal_plate_of_hindbrain: Hindbrain # E13 特有标签的图中简写；不修改真实标签和匹配关系。
+  misar_e13_5_s2:
+    expression_h5ad: data/benchmark/misar/BioSFIB/misar_e13_5-s2/misar_e13_5-s2_BioSFIB_result.h5ad # E13.5_S2 的 BioSFIB RNA 表达、聚类和真值注释输入文件。
+    cluster_key: BioSFIB  # BioSFIB 原始 mclust 聚类列；不会被覆盖。
+    truth_annotation_key: reference_label # S2 仅保存数字真值编码；通过下方别名映射为来自同阶段 S1 的组织名称。
+    output_dir: results/benchmark_figures/marker_genes/misar/misar_e13_5_s2 # 本切片的 marker PDF 与 CSV 输出目录。
+    matching:
+      ignored_truth_values: ['nan', 'na', 'none', '', '0'] # 数字编码 0 在所有可用 S1 注释中均无对应组织名，排除以避免伪造标签。
+      label_aliases:
+        '1': Hindbrain # 同阶段 S1 中 1 对应 Basal_plate_of_hindbrain，图中简写为 Hindbrain。
+        '2': Primary_brain_1 # 同阶段 S1 的真实组织名称。
+        '3': DPallv # 同阶段 S1 的真实组织名称。
+        '4': Cartilage_1 # 同阶段 S1 的真实组织名称。
+        '5': Muscle # 同阶段 S1 的真实组织名称。
+        '6': Cartilage_2 # 同阶段 S1 的真实组织名称。
+        '7': Cartilage_3 # 同阶段 S1 的真实组织名称。
+        '8': Mesenchyme # 同阶段 S1 的真实组织名称。
+        '9': Cartilage_4 # 同阶段 S1 的真实组织名称。
+        '10': Thalamus # 来自同一 MISAR 编码体系的已注释组织名称。
+        '11': DPallm # 同阶段 S1 的真实组织名称。
+        '13': Diencephalon # Diencephalon_and_hindbrain 的图中简写。
+        '14': Midbrain # 同阶段 S1 的真实组织名称。
+        '15': Subpallium_1 # 来自同一 MISAR 编码体系的已注释组织名称。
+        '16': Subpallium_2 # 来自同一 MISAR 编码体系的已注释组织名称。
+  misar_e11_0_s1:
+    expression_h5ad: data/benchmark/misar/BioSFIB/misar_e11-0-s1/misar_e11-0-s1_BioSFIB_result.h5ad # BioSFIB RNA 表达、聚类和真值注释所在的输入文件。
+    cluster_key: BioSFIB  # BioSFIB 原始 mclust 聚类列；不会被覆盖。
+    truth_annotation_key: Combined_Clusters_annotation # 真实组织/区域名称列；用于 Hungarian 匹配和展示命名。
+    output_dir: results/benchmark_figures/marker_genes/misar/misar_e11_0_s1 # 本实例的 PDF 与 CSV 输出目录。
+    matching:
+      label_aliases:
+        Diencephalon_and_hindbrain: Diencephalon # 仅用于图中展示的紧凑简写；匹配 CSV 仍保留完整真实标签。
+  misar_e18_5_s2:
+    expression_h5ad: data/benchmark/misar/BioSFIB/misar_e18-5-s2/misar_e18-5-s2_BioSFIB_result.h5ad # E18.5_S2 的 BioSFIB RNA 表达、聚类和真值注释输入文件。
+    cluster_key: BioSFIB  # BioSFIB 原始 mclust 聚类列；不会被覆盖。
+    truth_annotation_key: reference_label # S2 仅保存数字真值编码；通过下方别名映射为来自同阶段 S1 的组织名称。
+    output_dir: results/benchmark_figures/marker_genes/misar/misar_e18_5_s2 # 本切片的 marker PDF 与 CSV 输出目录。
+    matching:
+      ignored_truth_values: ['nan', 'na', 'none', '', '0'] # 数字编码 0 在所有可用 S1 注释中均无对应组织名，排除以避免伪造标签。
+      label_aliases:
+        '1': Hindbrain # 同阶段 S1 中 1 对应 Basal_plate_of_hindbrain，图中简写为 Hindbrain。
+        '2': Primary_brain_1 # 来自同一 MISAR 编码体系的已注释组织名称。
+        '3': DPallv # 同阶段 S1 的真实组织名称。
+        '4': Cartilage_1 # 同阶段 S1 的真实组织名称。
+        '5': Muscle # 同阶段 S1 的真实组织名称。
+        '6': Cartilage_2 # 同阶段 S1 的真实组织名称。
+        '7': Cartilage_3 # 同阶段 S1 的真实组织名称。
+        '8': Mesenchyme # 同阶段 S1 的真实组织名称。
+        '9': Cartilage_4 # 同阶段 S1 的真实组织名称。
+        '10': Thalamus # 同阶段 S1 的真实组织名称。
+        '11': DPallm # 同阶段 S1 的真实组织名称。
+        '13': Diencephalon # Diencephalon_and_hindbrain 的图中简写。
+        '14': Midbrain # 同阶段 S1 的真实组织名称。
+        '15': Subpallium_1 # 同阶段 S1 的真实组织名称。
+        '16': Subpallium_2 # 同阶段 S1 的真实组织名称。
+
+  p22_atac:
+    expression_h5ad: data/benchmark/mouse_brain_p22/BioSFIB/mouse_brain_ATAC/mouse_brain_ATAC_BioSFIB_result.h5ad # P22 ATAC 的 BioSFIB RNA 表达、聚类与真实区域标签输入文件。
+    cluster_key: BioSFIB # BioSFIB 原始 mclust 聚类列；当前为 18 个簇，不会被覆盖。
+    truth_annotation_key: truth # P22 ATAC 的真实区域名称列；使用 truth 而非含字符串 nan 的 reference_label。
+    output_dir: results/benchmark_figures/marker_genes/mouse_brain_p22/atac # 本实例的 PDF 与 CSV 输出目录。
+
+# P22 H3K27ac、H3K27me3 与 H3K4me3 当前均无独立真实组织名列；H3K27ac 的不可靠真值已移除。
+# 因此不能进行簇—组织 Hungarian 匹配，故不在此配置中添加，以避免把模型 cluster/official_cluster 错当作组织真值。

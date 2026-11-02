@@ -1,0 +1,5 @@
+target_gene,status,chrom,tss,n_links,n_significant_links,n_candidate_links
+Meg3,ok,chr12,109541001,10,10,0
+Malat1,ok,chr19,5802672,10,10,0
+Meis2,ok,chr2,116065839,10,10,0
+Dlx6os1,ok,chr6,6871592,10,10,0

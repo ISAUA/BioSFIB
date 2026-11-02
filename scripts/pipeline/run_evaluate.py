@@ -54,6 +54,7 @@ from sf_model.model.bio_sfinet import BioSFINet
 from sf_model.config import load_config as load_config_with_base
 from sf_model.model.bio_sfinet_tri import BioSFINetTri
 from sf_model.result_adata import load_result_reference_adata
+from analysis.meta.jaccard import calculate_spamv_knn_jaccard
 
 def load_config(config_path):
     return load_config_with_base(config_path)
@@ -1024,6 +1025,20 @@ def main():
 
     logger.info("Latent shape: %s", z_final.shape)
 
+    jaccard_per_spot = {}
+    jaccard_summaries = {}
+    if bool(eval_cfg.get("compute_jaccard", False)):
+        if tri_modal:
+            raise ValueError("The retained Jaccard protocol is defined for two-modal data")
+        other_label = str(eval_cfg.get("jaccard_other_label", "other"))
+        for name, features in (("rna", rna_feat), (other_label, atac_feat)):
+            per_spot, summary = calculate_spamv_knn_jaccard(z_final, features, k=int(eval_cfg.get("jaccard_k", 50)))
+            summary["learned_embedding"] = "z_out_before_mclust_pca"
+            summary["omics_features"] = "processed_data.pt:rna_feat" if name == "rna" else "processed_data.pt:atac_feat_as_metabolome"
+            jaccard_per_spot[name] = per_spot
+            jaccard_summaries[name] = summary
+    evaluation_summary = {}
+
     # 6. 可视化
     plot_path, h5ad_path, cluster_scores = visualize_and_save(
         z_final,
@@ -1043,6 +1058,9 @@ def main():
         checkpoint_name=ckpt_name,
         output_suffix=args.output_suffix,
         seed=seed,
+        jaccard_per_spot=jaccard_per_spot,
+        jaccard_summaries=jaccard_summaries,
+        evaluation_out=evaluation_summary,
     )
 
     ari_value = None if cluster_scores is None else float(cluster_scores["ARI"])
@@ -1052,6 +1070,8 @@ def main():
         "seed": seed,
         "fixed_embedding": "z_out",
         "ari": ari_value,
+        "jaccard": jaccard_summaries,
+        "spatial_clustering": evaluation_summary.get("spatial_clustering", {}),
         **ssr_diagnostics,
     }
     metrics_name = (

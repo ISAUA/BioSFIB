@@ -1,0 +1,30 @@
+# 所有相对路径均相对于仓库根目录；仅补算保存的预测，不重新训练模型。
+input_csv: source_data/benchmark/benchmark_metrics_combined.csv # 原 benchmark 指标长表，用于参数校验及读取已计算的指标。
+output_dir: results/benchmark_results_supplementary/p22_pca25 # 本次探索性补充结果的独立目录。
+dataset: mouse_brain_p22 # 本次评估的数据集名称。
+evaluation_id: pca25_truth_k # 七种标准模型的评估条件。
+evaluation_role: primary # 七种标准模型的评估角色。
+embedding_key: X_model_eval_pca # 已保存的评估表示键；直接使用该表示，不再 PCA。
+label_key: mclust_benchmark # 已保存的统一 mclust 聚类标签键。
+canonical_method: BioSFIB # 每张切片空间坐标和 spot 顺序的统一来源。
+seed: 42 # 重采样随机种子；静态指标无需随机数。
+slices: [mouse_brain_ATAC, mouse_brain_H3K27ac, mouse_brain_H3K27me3, mouse_brain_H3K4me3] # 纳入的四张 P22 切片。
+methods: [BioSFIB, SMART, SpaDDM, MultiGATE, SpatialGlue, COSMOS, MISO, SeuratWNN] # 完整参评模型列表。
+prediction_dir: results/benchmark_results_expanded/predictions # 既有五个模型 prediction H5AD 的根目录。
+method_overrides: # 新增模型的目录和条件覆盖设置。
+  COSMOS:
+    prediction_dir: results/benchmark_results_expanded/predictions # COSMOS 的增量 prediction 目录。
+  MISO:
+    prediction_dir: results/benchmark_results_expanded/predictions # MISO 的增量 prediction 目录。
+  SeuratWNN:
+    prediction_dir: results/benchmark_results_seurat_wnn/predictions # WNN 的独立 prediction 目录。
+    evaluation_id: native_2d_manual_k # WNN 使用自己的二维结果。
+    evaluation_role: native_sensitivity # CSV 中 WNN 已有结果的角色。
+    expected_dim: 2 # WNN 的表示维数；几何指标应注意与 25 维模型的差异。
+expected_dim: 25 # 标准模型必须具有的表示维数，禁止静默变化。
+spatial_neighbors: 6 # canonical 空间 KNN 图邻居数，沿用 benchmark。
+pas_original_neighbors: 10 # SpatialPCA 原始 PAS 定义的邻居数。
+metrics: [calinski_harabasz, davies_bouldin, cluster_gearys_c, PAS_k6, PAS_k10, neighbor_agreement_k6, CHAOS] # 全部探索指标，均完整输出。
+stability_repeats: 0 # 默认先补算静态指标；命令行 --stability-repeats 可开启反复 mclust 的稳定性评估。
+stability_fraction: 0.8 # 稳定性分析每次无放回抽取的 spot 比例；这称为子采样而非 bootstrap。
+mclust_model: EEE # 稳定性分析沿用原 benchmark 的 mclust 协方差模型。

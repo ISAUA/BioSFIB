@@ -1,0 +1,1341 @@
+# ============================================================================
+# 统一 benchmark 与绘图配置文件
+# 发布版：所有相对输入/输出路径均以仓库根目录为基准。
+# 修改参数后，评估脚本和绘图脚本会自动读取最新设置。
+# ============================================================================
+
+run:
+  seed: 42                         # 全局随机种子；用于记录实验设置，当前统一设为 42。
+  output_dir: results/benchmark_results_expanded # 本轮扩展 benchmark 的独立输出目录；不会覆盖旧 benchmark_results。
+  overwrite: false                 # 是否默认覆盖已有 benchmark 输出；命令行 --overwrite 可临时覆盖此设置。
+
+input:
+  methods:                         # 各模型结果文件及其融合 embedding 的读取规则。
+    BioSFIB:                       # 我们的方法名称；同时是统一真值与空间坐标的 canonical 来源。
+      file_glob: "data/benchmark/{dataset}/BioSFIB/{slice}/*_BioSFIB_result.h5ad"  # H5AD 路径模板；{dataset}/{slice} 会自动替换。
+      embedding_key: X_model       # AnnData.obsm 中的最终融合 embedding 键名。
+    MultiGATE:                     # MultiGATE 基线方法。
+      file_glob: "data/benchmark/{dataset}/multigate/{slice}/*_rna_multigate.h5ad" # 只读取 RNA 结果，避免 RNA/ADT/peak 成对文件被重复计分。
+      embedding_key: X_model       # MultiGATE 统一融合 embedding 键名。
+    SMART:                          # SMART 基线方法。
+      file_glob: "data/benchmark/{dataset}/smart/{slice}/*_smart_result.h5ad"      # SMART 结果文件路径模板。
+      embedding_key: X_model       # SMART 统一融合 embedding 键名。
+    SpaDDM:                         # SpaDDM 基线方法。
+      file_glob: "data/benchmark/{dataset}/spaddm/{slice}/*_spaddm_result.h5ad"    # SpaDDM 结果文件路径模板。
+      embedding_key: X_model       # SpaDDM 统一融合 embedding 键名。
+    SpatialGlue:                    # SpatialGlue 基线方法。
+      file_glob: "data/benchmark/{dataset}/spatialglue/{slice}/*_spatialglue_result.h5ad" # SpatialGlue 结果文件路径模板。
+      embedding_key: X_model       # SpatialGlue 统一融合 embedding 键名。
+    COSMOS:                         # COSMOS 新增基线方法；P22 的目录名包含扩展参数，故使用 cosmos* 通配。
+      file_glob: "data/benchmark/{dataset}/cosmos*/{slice}/*_cosmos*_result.h5ad" # COSMOS 结果文件路径模板；同时兼容普通数据集与 P22。
+      embedding_key: X_model       # COSMOS 的统一融合 embedding 键名。
+    MISO:                           # MISO 新增基线方法；P22 的目录名包含扩展参数，故使用 miso* 通配。
+      file_glob: "data/benchmark/{dataset}/miso*/{slice}/*_miso*_result.h5ad" # MISO 结果文件路径模板；同时兼容普通数据集与 P22。
+      embedding_key: X_model       # MISO 的统一融合 embedding 键名。
+  required_obsm_keys: [X_model, spatial] # 每份参评 H5AD 必须在 .obsm 中包含的键。
+  require_identical_obs_names: true       # 是否要求五个模型的 spot/cell ID 与顺序逐元素一致。
+  require_identical_spatial_coordinates: true # 是否要求五个模型的空间坐标逐元素一致；不一致时拒绝评估。
+
+pipeline:
+  pca:
+    center: true                   # PCA 是否中心化；sklearn PCA 的标准行为。
+    standardize: false              # 是否逐维标准化；保持 false，与 SMART 后处理流程一致。
+    strict_dimensions: true         # 若 embedding 维度小于目标 PCA 维度则直接报错，避免不同模型静默使用不同维数。
+    max_components_rule: "min(requested_dim, n_obs, n_features)" # strict_dimensions=false 时才使用的 PCA 降维回退规则。
+  mclust:
+    model_name: EEE                # R mclust 的协方差模型名称；所有方法统一使用 EEE。
+    seed: 42                       # R mclust 的随机种子；正式结果统一为 42。
+  spatial_moran:
+    n_neighbors: 6                 # Moran's I 空间 KNN 图的邻居数；每个切片只建立一次 canonical 图。
+  metrics:
+    required: [ARI, NMI, AMI, V_MEASURE, HOM, FMI, silhouette, cluster_morans_i] # 必需指标；计算错误会使该方法×切片×条件标为 failed。
+    optional: []                   # 可选指标；计算错误只标为 partial_success，不使整体退出码失败。
+
+# 条件定义：每个数据集的 runs 引用一个条件名称。
+# 新增 PCA/K 实验时，可先在这里新增条件，再把该条件加到相应数据集的 runs。
+conditions:
+  pca20_truth_k:
+    pca_dim: 20                    # PCA 输出维度；所有模型在该条件下必须一致。
+    cluster_count: truth_n_classes # mclust 的 K；自动读取有效真值类别数。
+    role: primary                  # 条件角色；写入 CSV，便于筛选主分析结果。
+  pca25_truth_k:
+    pca_dim: 25                    # PCA 输出维度；用于 MISAR/P22 的主分析。
+    cluster_count: truth_n_classes # 默认 K 为真值类别数；P22 会被每切片手动 K 覆盖。
+    role: primary                  # 条件角色；写入 CSV，表示主分析。
+  pca20_truth_k_sensitivity:
+    pca_dim: 20                    # PCA 输出维度；用于 PCA-25 主分析的敏感性比较。
+    cluster_count: truth_n_classes # 默认 K 为真值类别数；P22 会被每切片手动 K 覆盖。
+    role: sensitivity              # 条件角色；写入 CSV，表示敏感性分析。
+  tonsil_k6_primary:
+    pca_dim: 20                    # Human tonsil 的 PCA 输出维度。
+    cluster_count: 6               # Human tonsil 的 mclust 目标聚类数 K=6。
+    role: primary                  # 将 K=6 标为主条件。
+    truth_key: reference_label     # 外部指标仍使用四类 reference_label 真值，不使用 K=6 作为真值。
+  tonsil_k4_sensitivity:
+    pca_dim: 20                    # Human tonsil 敏感性分析的 PCA 输出维度。
+    cluster_count: 4               # Human tonsil 敏感性分析的 mclust 目标聚类数 K=4。
+    role: sensitivity              # 将 K=4 标为敏感性条件。
+    truth_key: reference_label     # 外部指标使用四类 reference_label 真值。
+  pca20_manual_k:
+    pca_dim: 20                    # 无真值 RNA+ADT 数据集的 PCA 输出维度；与既定 RNA+ADT 主分析一致。
+    cluster_count: manual          # K 必须由每个切片的 cluster_count_by_slice 显式给出，禁止从预测列自动推断。
+    role: primary                  # 该条件作为无真值数据集的主内部/空间指标分析。
+
+# 数据集设置：truth_key 的查找优先级为 run > condition > dataset。
+datasets:
+  simulation:
+    truth_key: reference_label     # simulation 统一真值列；从 BioSFIB H5AD 中读取。
+    methods: [BioSFIB, MultiGATE, SMART, SpaDDM, SpatialGlue, COSMOS, MISO]      # 发布版按列出的方法重新计算；仅使用已有外部结果，不运行第三方训练。
+    runs:
+      - condition: pca20_truth_k  # simulation 仅运行 PCA-20、真值 K 条件。
+
+  human_lymph:
+    truth_key: reference_label     # human lymph 统一真值列；从 BioSFIB H5AD 中读取。
+    methods: [BioSFIB, MultiGATE, SMART, SpaDDM, SpatialGlue, COSMOS, MISO]      # 发布版按列出的方法重新计算；仅使用已有外部结果，不运行第三方训练。
+    runs:
+      - condition: pca20_truth_k  # human lymph 仅运行 PCA-20、真值 K 条件。
+
+  human_tonsil:
+    truth_key: reference_label     # human tonsil 的四类参考注释列。
+    methods: [BioSFIB, MultiGATE, SMART, SpaDDM, SpatialGlue, COSMOS, MISO]      # 发布版按列出的方法重新计算；仅使用已有外部结果，不运行第三方训练。
+    runs:
+      - condition: tonsil_k6_primary     # K=6 主条件。
+      - condition: tonsil_k4_sensitivity # K=4 敏感性条件。
+
+  misar:
+    truth_key: reference_label     # MISAR 统一真值列；s1/s2 的原始标签已在导出时统一到此列。
+    methods: [BioSFIB, MultiGATE, SMART, SpaDDM, SpatialGlue, COSMOS, MISO]      # 发布版按列出的方法重新计算；仅使用已有外部结果，不运行第三方训练。
+    runs:
+      - condition: pca25_truth_k             # MISAR PCA-25 主条件。
+      - condition: pca20_truth_k_sensitivity # MISAR PCA-20 敏感性条件。
+
+  mouse_brain_p22:
+    truth_key: reference_label     # P22 可用时的统一真值列；两个无真值切片会自动得到 not_applicable 外部指标。
+    methods: [BioSFIB, MultiGATE, SMART, SpaDDM, SpatialGlue, COSMOS, MISO]      # 发布版按列出的方法重新计算；仅使用已有外部结果，不运行第三方训练。
+    runs:
+      - condition: pca25_truth_k  # P22 PCA-25 主条件。
+        cluster_count_by_slice:    # 覆盖默认真值 K；按切片指定论文设定的 mclust 聚类数。
+          mouse_brain_ATAC: 18     # ATAC 切片的手动 K。
+          mouse_brain_H3K27ac: 16 # H3K27ac 切片的手动 K。
+          mouse_brain_H3K27me3: 18 # H3K27me3 切片的手动 K。
+          mouse_brain_H3K4me3: 18 # H3K4me3 切片的手动 K。
+      - condition: pca20_truth_k_sensitivity # P22 PCA-20 敏感性条件。
+        cluster_count_by_slice:    # PCA-20 条件下保持与主条件相同的 K，确保只比较 PCA 维数差异。
+          mouse_brain_ATAC: 18     # ATAC 切片的手动 K。
+          mouse_brain_H3K27ac: 16 # H3K27ac 切片的手动 K。
+          mouse_brain_H3K27me3: 18 # H3K27me3 切片的手动 K。
+          mouse_brain_H3K4me3: 18 # H3K4me3 切片的手动 K。
+
+  mouse_spleen:
+    truth_key: null                # 当前文件没有独立真值；official_cluster 与 BioSFIB 聚类相同，不能作为外部指标真值。
+    methods: [BioSFIB, SMART, SpaDDM, SpatialGlue, COSMOS, MISO] # 六种可用模型；无 MultiGATE 与 Seurat WNN 输入。
+    runs:
+      - condition: pca20_manual_k # 无真值时仅计算 silhouette 和 Moran's I；外部指标记录 not_applicable。
+        cluster_count_by_slice:
+          mouse_spleen1: 5         # 预先指定的 spleen1 聚类数 K。
+          mouse_spleen2: 5         # 预先指定的 spleen2 聚类数 K。
+
+  mouse_thymus:
+    truth_key: null                # 当前文件没有独立真值；official_cluster 与 BioSFIB 聚类相同，不能作为外部指标真值。
+    methods: [BioSFIB, SMART, SpaDDM, SpatialGlue, COSMOS, MISO] # 六种可用模型；无 MultiGATE 与 Seurat WNN 输入。
+    runs:
+      - condition: pca20_manual_k # 无真值时仅计算 silhouette 和 Moran's I；外部指标记录 not_applicable。
+        cluster_count_by_slice:
+          mouse_thymus1: 8         # 预先指定的 thymus1 聚类数 K。
+          mouse_thymus2: 8         # 预先指定的 thymus2 聚类数 K。
+          mouse_thymus3: 8         # 预先指定的 thymus3 聚类数 K。
+          mouse_thymus4: 8         # 预先指定的 thymus4 聚类数 K。
+
+missing_truth:
+  external_metrics: null           # 无真值时外部指标写为 not_applicable/空值，不将其视为零分。
+  internal_metrics: [silhouette, cluster_morans_i] # 无真值切片仍计算的内部与空间指标。
+
+output:
+  metrics_csv: benchmark_metrics_expanded.csv # 本轮扩展 benchmark 的独立长表指标 CSV 文件名。
+  manifest_json: run_manifest_expanded.json   # 本轮扩展 benchmark 的独立运行状态与参数记录文件名。
+  predictions_dir: predictions       # 轻量 prediction H5AD 的子目录名称。
+  prediction_h5ad:
+    save: true                       # 是否保存每个方法×切片×条件的 prediction H5AD。
+    obs_keys: [reference_label, mclust_benchmark] # prediction H5AD 中保留的 .obs 列。
+    obsm_keys: [spatial, X_model_eval_pca] # prediction H5AD 中保留的 .obsm 键。
+    uns_key: benchmark_metadata      # prediction H5AD 中存放运行参数的 .uns 键名。
+
+# ============================================================================
+# 绘图设置
+# 使用方法：
+#   python plot_benchmark_figures.py --list
+#   python plot_benchmark_figures.py --figure misar_e18_5_s1_bubble
+#   python plot_benchmark_figures.py --figure misar_pca25_boxplot
+# 每个 definitions 条目都可复制、改名并扩展到新的数据集/切片。
+# ============================================================================
+figures:
+  defaults:
+    input_csv: source_data/benchmark/benchmark_metrics_combined.csv # 绘图读取合并后的长表 benchmark CSV 路径；包含历史、COSMOS/MISO 与 Seurat WNN 指标。
+    output_dir: results/benchmark_figures   # PDF 图像输出目录。
+    formats: [pdf]                  # 允许的输出格式；全局仅输出 PDF，不输出 SVG 或 PNG。
+    dpi: 600                        # PDF 中未来若嵌入 raster 图像时使用的 DPI；矢量元素本身不受 DPI 限制。
+    method_order: [BioSFIB, SMART, SpaDDM, MultiGATE, SpatialGlue, COSMOS, MISO, SeuratWNN] # 指标图固定模型顺序；SeuratWNN 为原生二维敏感性结果。
+    highlight_method: BioSFIB       # 始终用粗体突出本模型；不再依赖模型是否排在第一行。
+    method_evaluation_overrides:
+      SeuratWNN:
+        evaluation_id_by_dataset:
+          simulation: native_2d_truth_k # simulation 的 Seurat WNN 原生二维评估条件。
+          human_lymph: native_2d_truth_k # human lymph 的 Seurat WNN 原生二维评估条件。
+          human_tonsil: native_2d_k6_primary # tonsil K=6 图对应的 Seurat WNN 原生二维评估条件。
+          misar: native_2d_truth_k # MISAR 的 Seurat WNN 原生二维评估条件。
+          mouse_brain_p22: native_2d_manual_k # P22 的 Seurat WNN 原生二维手动 K 条件。
+        evaluation_role: native_sensitivity # Seurat WNN 原生二维结果的统一角色；与主 PCA benchmark 区分。
+    metric_labels:                  # CSV 指标名到图中列标题的映射。
+      ARI: ARI                       # Adjusted Rand Index 的显示名称。
+      FMI: FMI                       # Fowlkes-Mallows Index 的显示名称。
+      NMI: NMI                       # Normalized Mutual Information 的显示名称。
+      AMI: AMI                       # Adjusted Mutual Information 的显示名称。
+      V_MEASURE: V-Measure           # V-measure 的显示名称。
+      HOM: Homo                      # Homogeneity 的简写显示名称。
+      silhouette: Silhouette          # Silhouette 指标的显示名称。
+      cluster_morans_i: Moran's I    # 聚类标签 Moran's I 的显示名称。
+    method_colors:                   # 箱线图的模型颜色；新增模型时需在此添加颜色。
+      BioSFIB: '#00A896'             # BioSFIB 的明亮青绿色。
+      SMART: '#F4B400'               # SMART 的亮金黄色。
+      SpaDDM: '#F15A24'              # SpaDDM 的高饱和橙红色。
+      MultiGATE: '#2F80ED'           # MultiGATE 的亮蓝色。
+      SpatialGlue: '#A64DDB'         # SpatialGlue 的明亮紫色。
+      COSMOS: '#E83E8C'              # COSMOS 的亮玫红色；与既有蓝绿橙紫明显区分。
+      MISO: '#00A6D6'                # MISO 的亮青蓝色；与 BioSFIB 青绿色保持可辨识差异。
+      SeuratWNN: '#7CB342'           # Seurat WNN 的明亮黄绿色；用于原生二维敏感性行。
+
+  spatial_umap_maps_defaults:        # spatial_umap_maps 的共享设置；新增地图只需设置数据集、切片、条件和输出名称。
+    method_order: [BioSFIB, SMART, SpaDDM, MultiGATE, SpatialGlue, COSMOS, MISO, SeuratWNN] # 地图面板从左到右的模型顺序；SeuratWNN 直接使用自身二维坐标。
+    prediction_dir: results/benchmark_results_expanded/predictions # prediction H5AD 根目录。
+    prediction_dirs_by_method:
+      COSMOS: results/benchmark_results_expanded/predictions # COSMOS prediction 的增量输出根目录。
+      MISO: results/benchmark_results_expanded/predictions # MISO prediction 的增量输出根目录。
+      SeuratWNN: results/benchmark_results_seurat_wnn/predictions # SeuratWNN 原生二维 prediction 的独立输出根目录；仅在该方法列入地图时使用。
+    prediction_evaluation_ids_by_method:
+      SeuratWNN: native_2d_truth_k # SeuratWNN 默认原生二维条件；tonsil/P22/无真值数据集可在具体图定义中覆盖。
+    umap_source_keys_by_method:
+      SeuratWNN: X_model_native_2d # SeuratWNN 二维嵌入图直接读取自身原生二维坐标。
+    umap_precomputed_methods: [SeuratWNN] # 对列表中的方法直接绘制二维坐标，不再次计算 UMAP。
+    outputs:
+      spatial_dir: results/benchmark_figures/maps/spatial_composites # 六列 Spatial 合成 PDF 的输出目录。
+      umap_dir: results/benchmark_figures/maps/umap_composites       # 六列 UMAP 合成 PDF 的输出目录。
+      spatial_panel_dir: results/benchmark_figures/maps/spatial_panels # 单个 Spatial panel PDF 的输出目录。
+      umap_panel_dir: results/benchmark_figures/maps/umap_panels       # 单个 UMAP panel PDF 的输出目录。
+      mapping_dir: results/benchmark_figures/maps/color_mappings       # 预测簇到真值颜色的 JSON 映射目录。
+      formats: [pdf]                 # 地图只输出 PDF，方便后期在 Illustrator 中拼版。
+      save_single_panels: true        # 是否额外保存 Ground truth 与每个模型的独立 PDF panel。
+      save_color_mappings: true       # 是否保存每个模型的 cluster-to-color JSON 映射。
+      save_standalone_legends: true
+      legend_dir: results/benchmark_figures/maps/legends
+    colors:
+      truth_palette: tab20            # 真值类别离散色板；当前类别数最多 18，tab20 足够。
+      cluster_palette: tab20          # 不使用真值时，原始 mclust 簇编号使用的共享离散色板。
+      unmatched_palette: Set3         # 预测簇多于真值类别时，未匹配簇使用的备用离散色板。
+      unmatched_color: '#BDBDBD'      # 备用色板耗尽时使用的最终灰色。
+    legends:
+      truth: true                     # 是否显示真值标签图例；无有效真值时会自动跳过。
+      clusters: false                 # 是否显示原始 mclust 簇编号图例；raw_clusters 模式可单独开启。
+    truth_label_aliases_by_dataset:   # 仅替换图例显示文字；颜色匹配、真值键、指标和 H5AD 均保持原样。
+      misar:                          # MISAR 的统一数字编码到真实组织名称映射；S2 复用同阶段编码体系。
+        '0': Unannotated              # 编号 0 没有可靠组织注释，明确显示为未注释。
+        '1': Hindbrain                # Basal_plate_of_hindbrain 的论文图简写。
+        '2': Primary_brain_1          # Primary brain 区域 1。
+        '3': DPallv                   # Dorsal pallium ventral region。
+        '4': Cartilage_1              # Cartilage 区域 1。
+        '5': Muscle                   # Muscle。
+        '6': Cartilage_2              # Cartilage 区域 2。
+        '7': Cartilage_3              # Cartilage 区域 3。
+        '8': Mesenchyme               # Mesenchyme。
+        '9': Cartilage_4              # Cartilage 区域 4。
+        '10': Thalamus                # Thalamus。
+        '11': DPallm                  # Dorsal pallium medial region。
+        '12': Primary_brain_2         # Primary brain 区域 2。
+        '13': Diencephalon            # Diencephalon_and_hindbrain 的论文图简写。
+        '14': Midbrain                # Midbrain。
+        '15': Subpallium_1            # Subpallium 区域 1。
+        '16': Subpallium_2            # Subpallium 区域 2。
+    spatial:
+      point_size: 10                  # Spatial 点的散点面积；可按 spot 密度调整。
+      point_alpha: 1.0                # Spatial 点透明度；范围 0–1。
+      display_target_span: null       # 仅用于绘图的目标坐标跨度 [X, Y]；null 保持原坐标。非 null 时按轴独立归一化，不改 H5AD/指标。
+      invert_y: false                 # 是否翻转 Spatial 的 Y 轴。
+      show_axes: false                # 是否显示空间坐标轴；论文 panel 通常设为 false。
+      show_frame: true                # 不显示空间坐标轴时，是否保留与 UMAP 一致的黑色外框。
+      transform:
+        flip_horizontal: false        # 是否先按水平方向（左右）翻转空间坐标。
+        flip_vertical: false          # 是否在左右翻转后，按垂直方向（上下）翻转空间坐标。
+        rotate_cw: 0                  # 水平翻转后顺时针旋转的角度；仅可为 0、90、180 或 270，UMAP 不受影响。
+    umap:
+      source_key: X_model_eval_pca    # 生成 UMAP 的 .obsm 键；与 benchmark 聚类使用的 PCA 表示保持一致。
+      n_neighbors: 15                 # Scanpy UMAP 邻居数。
+      min_dist: 0.30                  # Scanpy UMAP 最小距离。
+      metric: euclidean               # 构建 UMAP 邻居图的距离度量。
+      random_state: 42                # UMAP 随机种子；保证重复出图坐标一致。
+      point_size: 10                  # UMAP 点的散点面积。
+      point_alpha: 0.90               # UMAP 点透明度；范围 0–1。
+      show_axes: true                 # 是否显示 UMAP 1/2 轴。
+      ylabel_position: 0.005           # UMAP 2 轴标题的相对 X 位置；放在本 panel 左边框内侧，避免落在两图间隙而与左侧 panel 外框重叠。
+      axis_label_pad: 1.0             # UMAP 1/2 轴标题与坐标轴的间距，单位 pt。
+    layout:
+      composite_size: [14.0, 3.10]    # 六列合成 PDF 的宽和高，单位英寸。
+      single_panel_size: [2.5, 2.5]   # 单独 panel PDF 的宽和高，单位英寸。
+      legend_ncol: auto               # 共享图例列数；auto 表示按类别数使用单行。
+      font_size: 8                    # 基础字体大小，单位 pt。
+      title_size: 9                   # 每个 panel 顶部标题字体大小，单位 pt。
+      dpi: 600                         # PDF 中未来嵌入 raster 元素时使用的 DPI。
+      legend_font_size: 9.0
+      legend_title_size: 9.0
+      legend_marker_size: 6.5
+      truth_legend_ncol_by_dataset:   # 各数据集独立真值图例的默认列数；具体 figure 中的 truth_legend_ncol 优先级更高。
+        misar: 4                      # MISAR 组织名称较长，默认分成 4 列，避免单行过宽。
+      truth_legend_order_by_dataset:  # 各数据集独立真值图例的排列方向。
+        misar: row_major              # MISAR 按行从左到右排列组织名称。
+      truth_legend_size_by_dataset:   # 各数据集独立真值图例的基础画布 [宽, 高]，单位英寸。
+        misar: [10.0, 3.0]            # 为 MISAR 的组织名称和多行布局预留空间。
+
+  boxplot_defaults:                   # boxplot 的共享设置；只影响箱线图，不改变 Spatial/UMAP 的模型顺序。
+    method_order: [SeuratWNN, MISO, COSMOS, SpatialGlue, MultiGATE, SpaDDM, SMART, BioSFIB] # 按当前顺序的完全反序从上到下排列，BioSFIB 位于最下方。
+
+  bubble_matrix_defaults:             # bubble_matrix 的共享设置；新增圆点图可继承色阶和表格样式。
+    method_order: [SeuratWNN, MISO, COSMOS, SpatialGlue, MultiGATE, SpaDDM, SMART, BioSFIB] # 按当前顺序的完全反序从上到下排列，BioSFIB 位于最下方。
+    colorbar_tick_font_size: 8.5       # 色条数字刻度字号，单位 pt；由原来的 6.5 pt 增大 2 pt。
+    colorbar_label_font_size: 9.0      # 色条“Metric value”标题字号，单位 pt；由原来的 7 pt 增大 2 pt。
+    color_scale:
+      mode: auto                        # 色阶范围模式；auto 按当前图所有显示数值自动计算，fixed 才使用下方 vmin/vmax。
+      padding_fraction: 0.00            # auto 模式下，实际数值范围两端额外保留的比例边距；0 表示直接使用观测最高/最低值。
+      minimum_padding: 0.00             # auto 模式下，两端至少保留的绝对边距；0 表示不额外扩展范围。
+      minimum_span: 0.05                # auto 模式下色阶的最小总宽度，防止单一或近似数值导致颜色过度敏感。
+      round_step: 0.10                  # auto 模式最终上下限向外取整的步长；0.10 表示色条只保留 0.1 的量级。
+      vmin: 0.30                        # fixed 模式的色条下限；auto 模式下不使用。
+      vmax: 0.70                        # fixed 模式的色条上限；auto 模式下不使用。
+      cmap: BuGn                        # Matplotlib 连续色图名称。
+      cmap_low: 0.08                   # 从原始色图中截取的起始位置；0–1，增大可避免过白。
+      cmap_high: 0.82                  # 从原始色图中截取的终止位置；0–1，减小可避免过深。
+    style:
+      row_band_color: '#F1F5F2'        # 交替行背景色。
+      separator_color: '#718078'       # 行间虚线颜色。
+      rule_color: '#222222'            # 表格实线、分隔线颜色。
+      dark_text: '#17231F'             # 浅色圆点/色块上的数字文字颜色。
+
+  definitions:
+    misar_e18_5_s1_maps:
+      type: spatial_umap_maps      # 图类型；同时生成 Spatial 与 UMAP 的对称比较图。
+      dataset: misar               # 读取 prediction H5AD 的数据集名称。
+      slice: misar_e18-5-s1        # 读取 prediction H5AD 的切片名称。
+      evaluation_id: pca25_truth_k # 读取 prediction H5AD 的 benchmark 条件名称。
+      evaluation_role: primary     # 与 metrics CSV 对应的条件角色；用于图文件元数据记录。
+      method_order: [BioSFIB, SMART, SpaDDM, MultiGATE, SpatialGlue, COSMOS, MISO, SeuratWNN] # 面板从左到右的模型顺序；SeuratWNN 直接使用自身二维坐标。
+      prediction_dir: results/benchmark_results_expanded/predictions # prediction H5AD 根目录；其下按条件/数据集/切片/模型组织。
+      output_stem: misar_e18_5_s1  # Spatial 与 UMAP 输出文件的共同名称主干。
+      outputs:
+        spatial_dir: results/benchmark_figures/maps/spatial_composites # 六列 Spatial 合成 PDF 的新建目录。
+        umap_dir: results/benchmark_figures/maps/umap_composites       # 六列 UMAP 合成 PDF 的新建目录。
+        spatial_panel_dir: results/benchmark_figures/maps/spatial_panels # 单个 Spatial panel PDF 的新建目录。
+        umap_panel_dir: results/benchmark_figures/maps/umap_panels       # 单个 UMAP panel PDF 的新建目录。
+        mapping_dir: results/benchmark_figures/maps/color_mappings       # 预测簇到真值颜色的 JSON 映射目录。
+        formats: [pdf]                 # 地图只输出 PDF，方便后期在 Illustrator 中拼版。
+        save_single_panels: true        # 是否额外保存 Ground truth 与每个模型的独立 PDF panel。
+        save_color_mappings: true       # 是否保存每个模型的 cluster-to-color JSON 映射。
+      colors:
+        truth_palette: tab20            # 真值类别离散色板；当前类别数最多 18，tab20 足够。
+        unmatched_palette: Set3         # 预测簇多于真值类别时，未匹配簇使用的备用离散色板。
+        unmatched_color: '#BDBDBD'      # 备用色板耗尽时使用的最终灰色。
+      spatial:
+        point_size: 10                  # Spatial 点的散点面积；可按 spot 密度调整。
+        point_alpha: 1.0                # Spatial 点透明度；范围 0–1。
+        invert_y: false                 # 是否翻转 Spatial 的 Y 轴；不同平台/切片方向不同时可修改。
+        show_axes: false                # 是否显示空间坐标轴；论文 panel 通常设为 false。
+      umap:
+        source_key: X_model_eval_pca    # 生成 UMAP 的 .obsm 键；与 benchmark 聚类使用的 PCA 表示保持一致。
+        n_neighbors: 15                 # Scanpy UMAP 邻居数。
+        min_dist: 0.30                  # Scanpy UMAP 最小距离；越小簇越紧凑。
+        metric: euclidean               # 构建 UMAP 邻居图的距离度量。
+        random_state: 42                # UMAP 随机种子；保证重复出图坐标一致。
+        point_size: 10                  # UMAP 点的散点面积。
+        point_alpha: 0.90               # UMAP 点透明度；范围 0–1。
+        show_axes: true                 # 是否显示 UMAP 1/2 轴；当前与参考论文图一致，保留简洁坐标轴。
+      layout:
+        composite_size: [14.0, 3.10]    # 六列合成 PDF 的宽和高，单位英寸；为单行共享图例预留底部空间。
+        single_panel_size: [2.5, 2.5]   # 单独 panel PDF 的宽和高，单位英寸。
+        legend_ncol: auto               # 合成图共享图例的列数；auto 表示按类别数使用单行并尽量铺满宽度。
+        font_size: 8                    # 基础字体大小，单位 pt。
+        title_size: 9                   # 每个 panel 顶部标题字体大小，单位 pt。
+        dpi: 600                         # PDF 中未来嵌入 raster 元素时使用的 DPI。
+
+    misar_e15_5_s1_bubble:
+      type: bubble_matrix            # 图类型；可选 bubble_matrix 或 boxplot。
+      output_dir: results/benchmark_figures/bubble_matrices # 本图输出目录；圆点图与箱线图分开保存。
+      dataset: misar                  # 从 CSV 筛选的数据集名称。
+      slice: misar_e15-5-s1          # bubble_matrix 必填；从 CSV 筛选的单个切片名称。
+      evaluation_id: pca25_truth_k   # 从 CSV 筛选的评估条件名称。
+      evaluation_role: primary        # 从 CSV 筛选的条件角色；例如 primary 或 sensitivity。
+      metric_group: external          # 从 CSV 筛选的指标类别；外部指标通常为 external。
+      metrics: [ARI, FMI, NMI, AMI, V_MEASURE, HOM] # 图中圆点列的显示顺序。
+      output_stem: misar_e15_5_s1_benchmark_bubble # 输出文件名主干；自动生成 .pdf。
+      show_panel_title: false         # 是否在图顶部显示 panel_title；多面板论文图一般设为 false。
+      panel_title: ''                 # show_panel_title=true 时使用的标题；留空则脚本自动拼接数据集/切片/条件。
+      figure_size: [9.0, 3.65]        # 图片宽和高，单位英寸。
+      dot_size: 650                   # 所有圆点固定面积；不使用大小表达指标数值。
+      font_size: 9                    # 基础字体大小，单位 pt。
+      metric_group_title: Biological conservation # 圆点指标区上方标题。
+      aggregate_title: Aggregate score # 右侧均值区上方标题。
+      aggregate_label: Mean           # 右侧均值列标题。
+      aggregate_metric_name: External mean # 右侧均值在脚本内部使用的列名。
+      colorbar_label: Metric value    # 色条标题。
+      color_scale:
+        vmin: 0.30                    # 色条最小实际数值；低于此值按最浅色显示。
+        vmax: 0.70                    # 色条最大实际数值；高于此值按最深色显示。
+        cmap: BuGn                     # Matplotlib 连续色图名称。
+        cmap_low: 0.08                # 从原始色图中截取的起始位置；0–1，增大可避免过白。
+        cmap_high: 0.82               # 从原始色图中截取的终止位置；0–1，减小可避免过深。
+      style:
+        row_band_color: '#F1F5F2'     # 交替行背景色。
+        separator_color: '#718078'    # 行间虚线颜色。
+        rule_color: '#222222'         # 表格实线、分隔线颜色。
+        dark_text: '#17231F'          # 浅色圆点/色块上的数字文字颜色。
+
+    misar_e18_5_s1_bubble:
+      type: bubble_matrix            # 图类型；可选 bubble_matrix 或 boxplot。
+      output_dir: results/benchmark_figures/bubble_matrices # 本图输出目录；圆点图与箱线图分开保存。
+      dataset: misar                  # 从 CSV 筛选的数据集名称。
+      slice: misar_e18-5-s1          # bubble_matrix 必填；从 CSV 筛选的单个切片名称。
+      evaluation_id: pca25_truth_k   # 从 CSV 筛选的评估条件名称。
+      evaluation_role: primary        # 从 CSV 筛选的条件角色；例如 primary 或 sensitivity。
+      metric_group: external          # 从 CSV 筛选的指标类别；外部指标通常为 external。
+      metrics: [ARI, FMI, NMI, AMI, V_MEASURE, HOM] # 图中圆点列的显示顺序。
+      output_stem: misar_e18_5_s1_benchmark_bubble # 输出文件名主干；自动生成 .pdf。
+      show_panel_title: false         # 是否在图顶部显示 panel_title；多面板论文图一般设为 false。
+      panel_title: ''                 # show_panel_title=true 时使用的标题；留空则脚本自动拼接数据集/切片/条件。
+      figure_size: [9.0, 3.65]        # 图片宽和高，单位英寸。
+      dot_size: 650                   # 所有圆点固定面积；不使用大小表达指标数值。
+      font_size: 9                    # 基础字体大小，单位 pt。
+      metric_group_title: Biological conservation # 圆点指标区上方标题。
+      aggregate_title: Aggregate score # 右侧均值区上方标题。
+      aggregate_label: Mean           # 右侧均值列标题。
+      aggregate_metric_name: External mean # 右侧均值在脚本内部使用的列名。
+      colorbar_label: Metric value    # 色条标题。
+      color_scale:
+        vmin: 0.30                    # 色条最小实际数值；低于此值按最浅色显示。
+        vmax: 0.70                    # 色条最大实际数值；高于此值按最深色显示。
+        cmap: BuGn                     # Matplotlib 连续色图名称。
+        cmap_low: 0.08                # 从原始色图中截取的起始位置；0–1，增大可避免过白。
+        cmap_high: 0.82               # 从原始色图中截取的终止位置；0–1，减小可避免过深。
+      style:
+        row_band_color: '#F1F5F2'     # 交替行背景色。
+        separator_color: '#718078'    # 行间虚线颜色。
+        rule_color: '#222222'         # 表格实线、分隔线颜色。
+        dark_text: '#17231F'          # 浅色圆点/色块上的数字文字颜色。
+
+    human_tonsil_k6_boxplot:
+      type: boxplot                   # 图类型；横向箱线图矩阵。
+      output_dir: results/benchmark_figures/boxplots # 本图输出目录；圆点图与箱线图分开保存。
+      dataset: human_tonsil                  # 从 CSV 筛选的数据集名称。
+      evaluation_id: tonsil_k6_primary    # 从 CSV 筛选的评估条件名称。
+      evaluation_role: primary        # 从 CSV 筛选的条件角色。
+      metric_group: external          # 从 CSV 筛选的指标类别。
+      metrics: [ARI, NMI, AMI, V_MEASURE, HOM, FMI] # 箱线图面板的显示顺序。
+      expected_n_slices: 3            # 每个方法×指标预期包含的切片数；设为 null 可关闭此完整性检查。
+      slice_sort: lexical   # 切片排序策略；当前保留 Human Tonsil 发育时期/section 顺序，其他数据集可改为 lexical。
+      output_stem: human_tonsil_k6_smart_style_boxplot # 输出文件名主干；自动生成 .pdf。
+      figure_size: [10.8, 3.35]       # 图片宽和高，单位英寸。
+      font_size: 8.5                  # 基础字体大小，单位 pt。
+      box_width: 0.48                 # 箱体垂直方向的宽度。
+      box_alpha: 0.86                 # 箱体填充透明度；范围 0–1。
+      axis:
+        mode: per_metric              # 横轴范围策略；当前每个指标独立缩放。
+        padding: 0.025                # 横轴在最小/最大数据值外增加的最小留白。
+        round_step: 0.05              # 横轴边界与刻度取整步长。
+        min_width: 0.20               # 单个指标面板允许的最小横轴范围，防止过度放大。
+      style:
+        panel_background_1: '#FFFFFF' # 奇数箱线图面板背景色。
+        panel_background_2: '#F4F4F4' # 偶数箱线图面板背景色。
+        box_edge_color: '#4A4A4A'     # 箱体、须和端帽的边框颜色。
+        median_color: '#222222'       # 箱体中位数线颜色。
+        grid_color: '#DEDEDE'         # 横轴参考网格线颜色。
+
+    misar_pca25_boxplot:
+      type: boxplot                   # 图类型；横向箱线图矩阵。
+      output_dir: results/benchmark_figures/boxplots # 本图输出目录；圆点图与箱线图分开保存。
+      dataset: misar                  # 从 CSV 筛选的数据集名称。
+      evaluation_id: pca25_truth_k    # 从 CSV 筛选的评估条件名称。
+      evaluation_role: primary        # 从 CSV 筛选的条件角色。
+      metric_group: external          # 从 CSV 筛选的指标类别。
+      metrics: [ARI, NMI, AMI, V_MEASURE, HOM, FMI] # 箱线图面板的显示顺序。
+      expected_n_slices: 8            # 每个方法×指标预期包含的切片数；设为 null 可关闭此完整性检查。
+      slice_sort: misar_development   # 切片排序策略；当前保留 MISAR 发育时期/section 顺序，其他数据集可改为 lexical。
+      output_stem: misar_pca25_truth_k_smart_style_boxplot # 输出文件名主干；自动生成 .pdf。
+      figure_size: [10.8, 3.35]       # 图片宽和高，单位英寸。
+      font_size: 8.5                  # 基础字体大小，单位 pt。
+      box_width: 0.48                 # 箱体垂直方向的宽度。
+      box_alpha: 0.86                 # 箱体填充透明度；范围 0–1。
+      axis:
+        mode: per_metric              # 横轴范围策略；当前每个指标独立缩放。
+        padding: 0.025                # 横轴在最小/最大数据值外增加的最小留白。
+        round_step: 0.05              # 横轴边界与刻度取整步长。
+        min_width: 0.20               # 单个指标面板允许的最小横轴范围，防止过度放大。
+      style:
+        panel_background_1: '#FFFFFF' # 奇数箱线图面板背景色。
+        panel_background_2: '#F4F4F4' # 偶数箱线图面板背景色。
+        box_edge_color: '#4A4A4A'     # 箱体、须和端帽的边框颜色。
+        median_color: '#222222'       # 箱体中位数线颜色。
+        grid_color: '#DEDEDE'         # 横轴参考网格线颜色。
+
+    human_lymph_123_boxplot:
+      type: boxplot                   # 图类型；横向箱线图矩阵。
+      output_dir: results/benchmark_figures/boxplots # 本图输出目录。
+      dataset: human_lymph            # 从 CSV 筛选的数据集名称。
+      slices: [human_lymph1, human_lymph2, human_lymph3] # 仅纳入的三个切片名称。
+      evaluation_id: pca20_truth_k    # PCA-20、真值 K 的主实验条件。
+      evaluation_role: primary         # 主实验角色。
+      metric_group: external           # 绘制外部聚类指标。
+      metrics: [ARI, NMI, AMI, V_MEASURE, HOM, FMI] # 箱线图面板的显示顺序。
+      expected_n_slices: 3             # 每个方法×指标应包含的切片数。
+      slice_sort: lexical              # 切片排序策略。
+      output_stem: human_lymph_123_pca20_boxplot # 输出文件名主干。
+
+    human_lymph_all_boxplot:
+      type: boxplot                   # 图类型；横向箱线图矩阵。
+      output_dir: results/benchmark_figures/boxplots # 本图输出目录。
+      dataset: human_lymph            # 从 CSV 筛选的数据集名称。
+      slices: [human_lymph_A1, human_lymph_D1, human_lymph1, human_lymph2, human_lymph3] # 纳入 A1、D1 与 1–3 的五个切片。
+      evaluation_id: pca20_truth_k    # PCA-20、真值 K 的主实验条件。
+      evaluation_role: primary         # 主实验角色。
+      metric_group: external           # 绘制外部聚类指标。
+      metrics: [ARI, NMI, AMI, V_MEASURE, HOM, FMI] # 箱线图面板的显示顺序。
+      expected_n_slices: 5             # 每个方法×指标应包含的切片数。
+      slice_sort: lexical              # 切片排序策略。
+      output_stem: human_lymph_all_pca20_boxplot # 输出文件名主干。
+
+    simulation_12345_boxplot:
+      type: boxplot                   # 图类型；横向箱线图矩阵。
+      output_dir: results/benchmark_figures/boxplots # 本图输出目录。
+      dataset: simulation              # 从 CSV 筛选的数据集名称。
+      slices: [simulation1, simulation2, simulation3, simulation4, simulation5] # 仅纳入 simulation1–5。
+      evaluation_id: pca20_truth_k     # PCA-20、真值 K 的主实验条件。
+      evaluation_role: primary          # 主实验角色。
+      metric_group: external            # 绘制外部聚类指标。
+      metrics: [ARI, NMI, AMI, V_MEASURE, HOM, FMI] # 箱线图面板的显示顺序。
+      expected_n_slices: 5              # 每个方法×指标应包含的切片数。
+      slice_sort: lexical               # 切片排序策略。
+      output_stem: simulation_12345_pca20_boxplot # 输出文件名主干。
+
+    simulation6_bubble:
+      type: bubble_matrix              # 图类型；单切片圆点矩阵。
+      output_dir: results/benchmark_figures/bubble_matrices # 本图输出目录。
+      dataset: simulation               # 从 CSV 筛选的数据集名称。
+      slice: simulation6                # 从 CSV 筛选的单个切片名称。
+      evaluation_id: pca20_truth_k      # PCA-20、真值 K 的主实验条件。
+      evaluation_role: primary           # 主实验角色。
+      metric_group: external             # 绘制外部聚类指标。
+      metrics: [ARI, FMI, NMI, AMI, V_MEASURE, HOM] # 圆点列的显示顺序。
+      output_stem: simulation6_benchmark_bubble # 输出文件名主干。
+      show_panel_title: false            # 不显示顶部标题，便于后续拼版。
+      panel_title: ''                    # 保留为空。
+      figure_size: [9.0, 3.65]          # 图片宽和高，单位英寸。
+      dot_size: 650                      # 所有圆点固定面积。
+      font_size: 9                       # 基础字体大小，单位 pt。
+      metric_group_title: Biological conservation # 圆点指标区上方标题。
+      aggregate_title: Aggregate score   # 右侧均值区上方标题。
+      aggregate_label: Mean              # 右侧均值列标题。
+      aggregate_metric_name: External mean # 右侧均值在脚本内部使用的列名。
+      colorbar_label: Metric value       # 色条标题。
+
+    p22_atac_maps:
+      type: spatial_umap_maps            # 图类型；同时生成 Spatial 与 UMAP 的对称比较图。
+      dataset: mouse_brain_p22            # 读取 prediction H5AD 的数据集名称。
+      slice: mouse_brain_ATAC             # 读取 prediction H5AD 的切片名称。
+      evaluation_id: pca25_truth_k        # P22 PCA-25 主实验条件。
+      evaluation_role: primary             # 主实验角色。
+      output_stem: p22_atac               # Spatial 与 UMAP 输出文件的共同名称主干。
+      prediction_evaluation_ids_by_method:
+        SeuratWNN: native_2d_manual_k     # P22 的 SeuratWNN 原生二维手动 K 条件。
+      show_truth: true                    # 不绘制 Ground truth；论文图直接展示五个模型的 18 簇聚类结果。
+      color_mode: raw_clusters             # 按原始 mclust 簇编号上色，不再根据真值匹配颜色。
+      legends:
+        truth: true                        # 开关：保留 ATAC 可用的真值标签图例，但不显示真值空间面板。
+        clusters: true                     # 开关：保留 1–18 的原始聚类标签图例。
+      layout:
+        cluster_legend_ncol: 3             # 独立 Cluster labels 图例固定为 3 列；18 类因此排成 6 行。
+        cluster_legend_order: row_major    # 按行从左到右排列为 1、2、3，下一行 4、5、6，以此类推。
+        cluster_legend_size: [3.2, 2.7]    # 独立 Cluster labels PDF 的基础宽高，单位英寸；紧凑容纳 6 行×3 列。
+
+    p22_h3k27ac_maps:
+      type: spatial_umap_maps             # 图类型；同时生成 Spatial 与 UMAP 的对称比较图。
+      dataset: mouse_brain_p22            # 读取 prediction H5AD 的数据集名称。
+      slice: mouse_brain_H3K27ac          # 读取 prediction H5AD 的切片名称。
+      evaluation_id: pca25_truth_k        # P22 PCA-25 主实验条件。
+      evaluation_role: primary             # 主实验角色。
+      output_stem: p22_h3k27ac            # Spatial 与 UMAP 输出文件的共同名称主干。
+      prediction_evaluation_ids_by_method:
+        SeuratWNN: native_2d_manual_k     # P22 的 SeuratWNN 原生二维手动 K 条件。
+      show_truth: false                   # 不绘制 Ground truth；H3K27ac 不再使用不可靠真值，仅展示五个模型的 16 簇聚类结果。
+      color_mode: raw_clusters             # 按原始 mclust 簇编号上色，不再根据真值匹配颜色。
+      legends:
+        truth: false                       # 不显示真值标签图例；该切片不再采用真值。
+        clusters: true                     # 开关：保留 1–16 的原始聚类标签图例。
+      spatial:
+        transform:
+          flip_horizontal: true            # 先左右翻转，以 ATAC 的图像方向为基准。
+          flip_vertical: true              # 再以上下中心轴翻转，以 ATAC 的图像方向为基准。
+          rotate_cw: 270                    # 再顺时针旋转 270°；UMAP 坐标不执行此变换。
+
+    p22_h3k27me3_maps:
+      type: spatial_umap_maps             # 图类型；同时生成 Spatial 与 UMAP 的对称比较图。
+      dataset: mouse_brain_p22            # 读取 prediction H5AD 的数据集名称。
+      slice: mouse_brain_H3K27me3         # 读取 prediction H5AD 的切片名称。
+      evaluation_id: pca25_truth_k        # P22 PCA-25 主实验条件。
+      evaluation_role: primary             # 主实验角色。
+      output_stem: p22_h3k27me3           # Spatial 与 UMAP 输出文件的共同名称主干。
+      prediction_evaluation_ids_by_method:
+        SeuratWNN: native_2d_manual_k     # P22 的 SeuratWNN 原生二维手动 K 条件。
+      show_truth: false                    # 该切片无真值，仅绘制五个模型的 18 簇聚类结果。
+      color_mode: raw_clusters             # 使用与 ATAC 相同的簇编号—颜色顺序。
+      legends:
+        truth: true                        # 开关：该切片无真值，开启时也会自动跳过真值标签图例。
+        clusters: true                     # 开关：保留 1–18 的原始聚类标签图例。
+      spatial:
+        transform:
+          flip_horizontal: true            # 先左右翻转，以 ATAC 的图像方向为基准。
+          rotate_cw: 90                    # 再顺时针旋转 90°；UMAP 坐标不执行此变换。
+
+    p22_h3k4me3_maps:
+      type: spatial_umap_maps             # 图类型；同时生成 Spatial 与 UMAP 的对称比较图。
+      dataset: mouse_brain_p22            # 读取 prediction H5AD 的数据集名称。
+      slice: mouse_brain_H3K4me3          # 读取 prediction H5AD 的切片名称。
+      evaluation_id: pca25_truth_k        # P22 PCA-25 主实验条件。
+      evaluation_role: primary             # 主实验角色。
+      output_stem: p22_h3k4me3            # Spatial 与 UMAP 输出文件的共同名称主干。
+      prediction_evaluation_ids_by_method:
+        SeuratWNN: native_2d_manual_k     # P22 的 SeuratWNN 原生二维手动 K 条件。
+      show_truth: false                    # 该切片无真值，仅绘制五个模型的 18 簇聚类结果。
+      color_mode: raw_clusters             # 使用与 ATAC 相同的簇编号—颜色顺序。
+      legends:
+        truth: true                        # 开关：该切片无真值，开启时也会自动跳过真值标签图例。
+        clusters: true                     # 开关：保留 1–18 的原始聚类标签图例。
+      spatial:
+        transform:
+          flip_horizontal: false           # 不做左右翻转，以 ATAC 的图像方向为基准。
+          rotate_cw: 90                    # 仅顺时针旋转 90°；UMAP 坐标不执行此变换。
+
+    simulation6_maps:
+      type: spatial_umap_maps             # 图类型；同时生成 Spatial 与 UMAP 的对称比较图。
+      dataset: simulation                 # 读取 prediction H5AD 的数据集名称。
+      slice: simulation6                  # 读取 prediction H5AD 的切片名称。
+      evaluation_id: pca20_truth_k        # Simulation PCA-20 主实验条件。
+      evaluation_role: primary             # 主实验角色。
+      output_stem: simulation6            # Spatial 与 UMAP 输出文件的共同名称主干。
+      colors:
+        truth_palette: ['#1F77B4', '#FF7F0E', '#2CA02C', '#D62728', '#9467BD'] # SMART simulation6 风格：五类真值依次使用蓝、橙、绿、红、紫。
+
+    human_lymph1_maps:
+      type: spatial_umap_maps             # 图类型；同时生成 Spatial 与 UMAP 的对称比较图。
+      dataset: human_lymph                # 读取 prediction H5AD 的数据集名称。
+      slice: human_lymph1                 # 读取 prediction H5AD 的切片名称。
+      evaluation_id: pca20_truth_k        # Human Lymph PCA-20 主实验条件。
+      evaluation_role: primary             # 主实验角色。
+      output_stem: human_lymph1           # Spatial 与 UMAP 输出文件的共同名称主干。
+      layout:
+        composite_size: [21.0, 4.8]       # 加宽并提高六面板合图画布，使每个 Spatial/UMAP panel 接近正方形。
+        single_panel_size: [4.0, 3.6]     # 独立 panel 使用正方形画布。
+
+    human_lymph_a1_maps:
+      type: spatial_umap_maps             # 图类型；同时生成 Human Lymph A1 的 Spatial 与 UMAP 对称比较图。
+      dataset: human_lymph                # 读取 prediction H5AD 的数据集名称。
+      slice: human_lymph_A1               # 读取 A1 切片名称；大小写须与结果 CSV/H5AD 一致。
+      evaluation_id: pca20_truth_k        # Human Lymph PCA-20、真值 K 主实验条件。
+      evaluation_role: primary             # 主实验角色。
+      output_stem: human_lymph_a1         # Spatial 与 UMAP PDF 的共同文件名主干。
+      layout:
+        composite_size: [21.0, 4.8]       # 九面板（真值+八模型）合成图尺寸，保证单个 panel 接近正方形。
+        single_panel_size: [4.0, 3.6]     # 单独 panel PDF 的尺寸，单位英寸。
+
+    human_lymph2_maps:
+      type: spatial_umap_maps             # 图类型；同时生成 Human Lymph 2 的 Spatial 与 UMAP 对称比较图。
+      dataset: human_lymph                # 读取 prediction H5AD 的数据集名称。
+      slice: human_lymph2                 # 读取 Lymph 2 切片名称。
+      evaluation_id: pca20_truth_k        # Human Lymph PCA-20、真值 K 主实验条件。
+      evaluation_role: primary             # 主实验角色。
+      output_stem: human_lymph2           # Spatial 与 UMAP PDF 的共同文件名主干。
+      layout:
+        composite_size: [21.0, 4.8]       # 九面板（真值+八模型）合成图尺寸，保证单个 panel 接近正方形。
+        single_panel_size: [4.0, 3.6]     # 单独 panel PDF 的尺寸，单位英寸。
+
+    human_lymph3_maps:
+      type: spatial_umap_maps             # 图类型；同时生成 Human Lymph 3 的 Spatial 与 UMAP 对称比较图。
+      dataset: human_lymph                # 读取 prediction H5AD 的数据集名称。
+      slice: human_lymph3                 # 读取 Lymph 3 切片名称。
+      evaluation_id: pca20_truth_k        # Human Lymph PCA-20、真值 K 主实验条件。
+      evaluation_role: primary             # 主实验角色。
+      output_stem: human_lymph3           # Spatial 与 UMAP PDF 的共同文件名主干。
+      layout:
+        composite_size: [21.0, 4.8]       # 九面板（真值+八模型）合成图尺寸，保证单个 panel 接近正方形。
+        single_panel_size: [4.0, 3.6]     # 单独 panel PDF 的尺寸，单位英寸。
+
+    human_lymph_d1_maps:
+      type: spatial_umap_maps             # 图类型；同时生成 Human Lymph D1 的 Spatial 与 UMAP 对称比较图。
+      dataset: human_lymph                # 读取 prediction H5AD 的数据集名称。
+      slice: human_lymph_D1               # 读取 D1 切片名称；大小写须与 prediction 路径一致。
+      evaluation_id: pca20_truth_k        # Human Lymph PCA-20、真值 K 主实验条件。
+      evaluation_role: primary             # 主实验角色。
+      output_stem: human_lymph_d1         # Spatial 与 UMAP PDF 的共同文件名主干。
+      layout:
+        composite_size: [21.0, 4.8]       # 九面板（真值+八模型）合成图尺寸，保证单个 panel 接近正方形。
+        single_panel_size: [4.0, 3.6]     # 单独 panel PDF 的尺寸，单位英寸。
+
+    misar_e11_0_s1_maps:
+      type: spatial_umap_maps             # 图类型；同时生成 Spatial 与 UMAP 的对称比较图。
+      dataset: misar                      # 读取 prediction H5AD 的数据集名称。
+      slice: misar_e11_0-s1               # 读取 prediction H5AD 的切片名称。
+      evaluation_id: pca25_truth_k        # MISAR PCA-25 主实验条件。
+      evaluation_role: primary             # 主实验角色。
+      output_stem: misar_e11_0_s1         # Spatial 与 UMAP 输出文件的共同名称主干。
+
+    misar_e11_0_s2_maps:
+      type: spatial_umap_maps             # 图类型；同时生成 Spatial 与 UMAP 的对称比较图。
+      dataset: misar                      # 读取 prediction H5AD 的数据集名称。
+      slice: misar_e11_0-s2               # 读取 prediction H5AD 的切片名称。
+      evaluation_id: pca25_truth_k        # MISAR PCA-25 主实验条件。
+      evaluation_role: primary             # 主实验角色。
+      output_stem: misar_e11_0_s2         # Spatial 与 UMAP 输出文件的共同名称主干。
+
+    misar_e13_5_s1_maps:
+      type: spatial_umap_maps             # 图类型；同时生成 Spatial 与 UMAP 的对称比较图。
+      dataset: misar                      # 读取 prediction H5AD 的数据集名称。
+      slice: misar_e13_5-s1               # 读取 prediction H5AD 的切片名称。
+      evaluation_id: pca25_truth_k        # MISAR PCA-25 主实验条件。
+      evaluation_role: primary             # 主实验角色。
+      output_stem: misar_e13_5_s1         # Spatial 与 UMAP 输出文件的共同名称主干。
+
+    misar_e13_5_s2_maps:
+      type: spatial_umap_maps             # 图类型；同时生成 Spatial 与 UMAP 的对称比较图。
+      dataset: misar                      # 读取 prediction H5AD 的数据集名称。
+      slice: misar_e13_5-s2               # 读取 prediction H5AD 的切片名称。
+      evaluation_id: pca25_truth_k        # MISAR PCA-25 主实验条件。
+      evaluation_role: primary             # 主实验角色。
+      output_stem: misar_e13_5_s2         # Spatial 与 UMAP 输出文件的共同名称主干。
+
+    misar_e15_5_s1_maps:
+      type: spatial_umap_maps             # 图类型；同时生成 Spatial 与 UMAP 的对称比较图。
+      dataset: misar                      # 读取 prediction H5AD 的数据集名称。
+      slice: misar_e15-5-s1               # 读取 prediction H5AD 的切片名称。
+      evaluation_id: pca25_truth_k        # MISAR PCA-25 主实验条件。
+      evaluation_role: primary             # 主实验角色。
+      output_stem: misar_e15_5_s1         # Spatial 与 UMAP 输出文件的共同名称主干。
+      layout:
+        truth_legend_ncol: 2              # 该切片实际有 12 个真值类别；固定 2 列后排成 6 行，不补入不存在的类别。
+        truth_legend_order: row_major     # 按当前标签顺序逐行从左到右排列，而不是 Matplotlib 默认的按列填充。
+        truth_legend_size: [5.2, 3.8]     # 独立真值图例 PDF 的基础宽高，单位英寸；容纳 6 行×2 列组织名称。
+
+    misar_e15_5_s2_maps:
+      type: spatial_umap_maps             # 图类型；同时生成 Spatial 与 UMAP 的对称比较图。
+      dataset: misar                      # 读取 prediction H5AD 的数据集名称。
+      slice: misar_e15-5-s2               # 读取 prediction H5AD 的切片名称。
+      evaluation_id: pca25_truth_k        # MISAR PCA-25 主实验条件。
+      evaluation_role: primary             # 主实验角色。
+      output_stem: misar_e15_5_s2         # Spatial 与 UMAP 输出文件的共同名称主干。
+      layout:
+        truth_legend_ncol: 2              # 该切片的真值组织名称固定排成 2 列。
+        truth_legend_order: row_major     # 按当前标签顺序逐行从左到右排列。
+        truth_legend_size: [5.2, 4.5]     # 独立真值图例 PDF 的基础宽高，单位英寸；容纳多行两列组织名称。
+
+    misar_e18_5_s2_maps:
+      type: spatial_umap_maps             # 图类型；同时生成 Spatial 与 UMAP 的对称比较图。
+      dataset: misar                      # 读取 prediction H5AD 的数据集名称。
+      slice: misar_e18-5-s2               # 读取 prediction H5AD 的切片名称。
+      evaluation_id: pca25_truth_k        # MISAR PCA-25 主实验条件。
+      evaluation_role: primary             # 主实验角色。
+      output_stem: misar_e18_5_s2         # Spatial 与 UMAP 输出文件的共同名称主干。
+
+    p22_atac_bubble:
+      type: bubble_matrix                  # 图类型；单切片圆点矩阵。
+      output_dir: results/benchmark_figures/bubble_matrices # 本图输出目录；仅输出 PDF。
+      dataset: mouse_brain_p22             # 从 CSV 筛选的数据集名称。
+      slice: mouse_brain_ATAC              # 从 CSV 筛选的 ATAC 单个切片名称。
+      evaluation_id: pca25_truth_k         # P22 PCA-25 主实验条件；该切片固定使用 K=18。
+      evaluation_role: primary              # 主实验角色。
+      metric_group: external                # 绘制有真值 ATAC 切片的外部聚类指标。
+      metrics: [ARI, FMI, NMI, AMI, V_MEASURE, HOM] # 圆点列从左到右的显示顺序。
+      output_stem: p22_atac_pca25_bubble   # 输出 PDF 文件名主干。
+      show_panel_title: false               # 不显示顶部标题，便于论文后期拼版。
+      panel_title: ''                       # show_panel_title=true 时使用的标题；当前留空。
+      figure_size: [9.0, 3.65]             # 图片宽和高，单位英寸。
+      dot_size: 650                         # 所有圆点固定面积；不使用大小表达指标数值。
+      font_size: 9                          # 基础字体大小，单位 pt。
+      metric_group_title: Biological conservation # 圆点指标区上方标题。
+      aggregate_title: Aggregate score      # 右侧均值区上方标题。
+      aggregate_label: Mean                 # 右侧均值列标题。
+      aggregate_metric_name: External mean  # 右侧均值在脚本内部使用的列名。
+      colorbar_label: Metric value          # 色条标题。
+
+    human_lymph_a1_bubble:
+      type: bubble_matrix                  # 图类型；单切片圆点矩阵。
+      output_dir: results/benchmark_figures/bubble_matrices # 本图输出目录；仅输出 PDF。
+      dataset: human_lymph                 # 从 CSV 筛选的数据集名称。
+      slice: human_lymph_A1                # 从 CSV 筛选的 A1 单个切片名称。
+      evaluation_id: pca20_truth_k         # Human Lymph PCA-20 主实验条件。
+      evaluation_role: primary              # 主实验角色。
+      metric_group: external                # 绘制外部聚类指标。
+      metrics: [ARI, FMI, NMI, AMI, V_MEASURE, HOM] # 圆点列从左到右的显示顺序。
+      output_stem: human_lymph_a1_pca20_bubble # 输出 PDF 文件名主干。
+      show_panel_title: false               # 不显示顶部标题，便于论文后期拼版。
+      panel_title: ''                       # show_panel_title=true 时使用的标题；当前留空。
+      figure_size: [9.0, 3.65]             # 图片宽和高，单位英寸。
+      dot_size: 650                         # 所有圆点固定面积；不使用大小表达指标数值。
+      font_size: 9                          # 基础字体大小，单位 pt。
+      metric_group_title: Biological conservation # 圆点指标区上方标题。
+      aggregate_title: Aggregate score      # 右侧均值区上方标题。
+      aggregate_label: Mean                 # 右侧均值列标题。
+      aggregate_metric_name: External mean  # 右侧均值在脚本内部使用的列名。
+      colorbar_label: Metric value          # 色条标题。
+
+    human_tonsil_slice1_bubble:
+      type: bubble_matrix                  # 图类型；单切片圆点矩阵。
+      output_dir: results/benchmark_figures/bubble_matrices # 本图输出目录；仅输出 PDF。
+      dataset: human_tonsil                # 从 CSV 筛选的数据集名称。
+      slice: slice1                        # 从 CSV 筛选的 Human Tonsil 单个切片名称。
+      evaluation_id: tonsil_k6_primary     # Human Tonsil K=6 主实验条件；外部指标仍基于四类真实标签。
+      evaluation_role: primary              # 主实验角色。
+      metric_group: external                # 绘制外部聚类指标。
+      metrics: [ARI, FMI, NMI, AMI, V_MEASURE, HOM] # 圆点列从左到右的显示顺序。
+      output_stem: human_tonsil_slice1_k6_bubble # 输出 PDF 文件名主干。
+      show_panel_title: false               # 不显示顶部标题，便于论文后期拼版。
+      panel_title: ''                       # show_panel_title=true 时使用的标题；当前留空。
+      figure_size: [9.0, 3.65]             # 图片宽和高，单位英寸。
+      dot_size: 650                         # 所有圆点固定面积；不使用大小表达指标数值。
+      font_size: 9                          # 基础字体大小，单位 pt。
+      metric_group_title: Biological conservation # 圆点指标区上方标题。
+      aggregate_title: Aggregate score      # 右侧均值区上方标题。
+      aggregate_label: Mean                 # 右侧均值列标题。
+      aggregate_metric_name: External mean  # 右侧均值在脚本内部使用的列名。
+      colorbar_label: Metric value          # 色条标题。
+
+    misar_e13_5_s2_bubble:
+      type: bubble_matrix                  # 图类型；单切片外部聚类指标圆点矩阵。
+      output_dir: results/benchmark_figures/bubble_matrices # 圆点图 PDF 输出目录。
+      dataset: misar                       # 从合并 CSV 筛选的数据集名称。
+      slice: misar_e13_5-s2                # E13.5_S2 的实际切片名称；使用连字符格式。
+      evaluation_id: pca25_truth_k         # MISAR 的 PCA-25、真值 K 主分析条件。
+      evaluation_role: primary              # 主分析角色；SeuratWNN 会自动读取其自身二维条件。
+      metric_group: external                # 绘制外部聚类指标。
+      metrics: [ARI, FMI, NMI, AMI, V_MEASURE, HOM] # 圆点列从左到右的指标顺序。
+      output_stem: misar_e13_5_s2_benchmark_bubble # 输出 PDF 文件名主干。
+      show_panel_title: false               # 不显示顶部标题，便于论文后续拼版。
+      panel_title: ''                       # 保留为空；仅在 show_panel_title=true 时使用。
+      figure_size: [9.0, 3.65]             # 图像基础宽高；脚本会按八个模型自动增高。
+      dot_size: 650                         # 所有圆点使用固定面积。
+      font_size: 9                          # 基础字体大小，单位 pt。
+      metric_group_title: Biological conservation # 指标区域上方标题。
+      aggregate_title: Aggregate score      # 右侧聚合区域标题。
+      aggregate_label: Mean                 # 右侧均值列标题。
+      aggregate_metric_name: External mean  # 右侧聚合列的内部名称。
+      colorbar_label: Metric value          # 色条标题。
+
+    misar_e18_5_s2_bubble:
+      type: bubble_matrix                  # 图类型；单切片外部聚类指标圆点矩阵。
+      output_dir: results/benchmark_figures/bubble_matrices # 圆点图 PDF 输出目录。
+      dataset: misar                       # 从合并 CSV 筛选的数据集名称。
+      slice: misar_e18-5-s2                # E18.5_S2 的实际切片名称；使用连字符格式。
+      evaluation_id: pca25_truth_k         # MISAR 的 PCA-25、真值 K 主分析条件。
+      evaluation_role: primary              # 主分析角色；SeuratWNN 会自动读取其自身二维条件。
+      metric_group: external                # 绘制外部聚类指标。
+      metrics: [ARI, FMI, NMI, AMI, V_MEASURE, HOM] # 圆点列从左到右的指标顺序。
+      output_stem: misar_e18_5_s2_benchmark_bubble # 输出 PDF 文件名主干。
+      show_panel_title: false               # 不显示顶部标题，便于论文后续拼版。
+      panel_title: ''                       # 保留为空；仅在 show_panel_title=true 时使用。
+      figure_size: [9.0, 3.65]             # 图像基础宽高；脚本会按八个模型自动增高。
+      dot_size: 650                         # 所有圆点使用固定面积。
+      font_size: 9                          # 基础字体大小，单位 pt。
+      metric_group_title: Biological conservation # 指标区域上方标题。
+      aggregate_title: Aggregate score      # 右侧聚合区域标题。
+      aggregate_label: Mean                 # 右侧均值列标题。
+      aggregate_metric_name: External mean  # 右侧聚合列的内部名称。
+      colorbar_label: Metric value          # 色条标题。
+
+    human_lymph3_bubble:
+      type: bubble_matrix                  # 图类型；单切片外部聚类指标圆点矩阵。
+      output_dir: results/benchmark_figures/bubble_matrices # 圆点图 PDF 输出目录。
+      dataset: human_lymph                 # 从合并 CSV 筛选的数据集名称。
+      slice: human_lymph3                  # Human Lymph 3 的实际切片名称。
+      evaluation_id: pca20_truth_k         # Human Lymph 的 PCA-20、真值 K 主分析条件。
+      evaluation_role: primary              # 主分析角色；SeuratWNN 会自动读取其自身二维条件。
+      metric_group: external                # 绘制外部聚类指标。
+      metrics: [ARI, FMI, NMI, AMI, V_MEASURE, HOM] # 圆点列从左到右的指标顺序。
+      output_stem: human_lymph3_pca20_bubble # 输出 PDF 文件名主干。
+      show_panel_title: false               # 不显示顶部标题，便于论文后续拼版。
+      panel_title: ''                       # 保留为空；仅在 show_panel_title=true 时使用。
+      figure_size: [9.0, 3.65]             # 图像基础宽高；脚本会按八个模型自动增高。
+      dot_size: 650                         # 所有圆点使用固定面积。
+      font_size: 9                          # 基础字体大小，单位 pt。
+      metric_group_title: Biological conservation # 指标区域上方标题。
+      aggregate_title: Aggregate score      # 右侧聚合区域标题。
+      aggregate_label: Mean                 # 右侧均值列标题。
+      aggregate_metric_name: External mean  # 右侧聚合列的内部名称。
+      colorbar_label: Metric value          # 色条标题。
+
+    misar_pca25_internal_spatial_boxplot:
+      type: boxplot                        # 图类型；横向箱线图矩阵。
+      output_dir: results/benchmark_figures/boxplots # 本图输出目录；与外部指标箱线图分开存储。
+      dataset: misar                       # 从 CSV 筛选的数据集名称。
+      evaluation_id: pca25_truth_k         # MISAR PCA-25 主实验条件。
+      evaluation_role: primary              # 主实验角色。
+      metric_groups: [internal, spatial]   # 同时读取内部指标与空间指标；用于 silhouette 和 Moran's I 的组合图。
+      metrics: [silhouette, cluster_morans_i] # 两个箱线图面板从左到右的显示顺序。
+      expected_n_slices: 8                 # 每个方法×指标预期包含的 MISAR 切片数。
+      slice_sort: misar_development        # 切片排序策略；保留发育时期/section 顺序的配置语义。
+      output_stem: misar_pca25_internal_spatial_boxplot # 输出文件名主干；自动生成 .pdf。
+      figure_size: [5.2, 3.35]             # 两个指标面板的宽和高，单位英寸。
+      font_size: 8.5                       # 基础字体大小，单位 pt。
+      box_width: 0.48                      # 箱体垂直方向的宽度。
+      box_alpha: 0.86                      # 箱体填充透明度；范围 0–1。
+      axis:
+        mode: per_metric                   # 每个指标独立使用横轴范围，避免量纲差异掩盖分布。
+        padding: 0.025                     # 横轴在最小/最大数据值外增加的最小留白。
+        round_step: 0.05                   # 横轴边界与刻度取整步长。
+        min_width: 0.20                    # 单个指标面板允许的最小横轴范围。
+      style:
+        panel_background_1: '#FFFFFF'      # silhouette 面板背景色。
+        panel_background_2: '#F4F4F4'      # Moran's I 面板背景色。
+        box_edge_color: '#4A4A4A'          # 箱体、须和端帽的边框颜色。
+        median_color: '#222222'            # 箱体中位数线颜色。
+        grid_color: '#DEDEDE'              # 横轴参考网格线颜色。
+
+    p22_pca25_internal_spatial_boxplot:
+      type: boxplot                        # 图类型；横向箱线图矩阵。
+      output_dir: results/benchmark_figures/boxplots # 本图 PDF 输出目录。
+      dataset: mouse_brain_p22             # 从合并指标 CSV 中筛选 P22 数据集。
+      slices: [mouse_brain_ATAC, mouse_brain_H3K27ac, mouse_brain_H3K27me3, mouse_brain_H3K4me3] # 纳入 P22 的四张切片。
+      evaluation_id: pca25_truth_k         # 七个 PCA 模型读取 PCA-25 主实验结果；SeuratWNN 由全局覆盖规则读取原生二维结果。
+      evaluation_role: primary             # PCA-25 结果在 benchmark 中对应的主实验角色。
+      metric_groups: [internal, spatial]   # 同时读取内部指标与空间指标两组结果。
+      metrics: [silhouette, cluster_morans_i] # 两个面板从左到右依次显示 Silhouette 与 Moran's I。
+      expected_n_slices: 4                 # 每个模型和每项指标必须完整包含四张 P22 切片。
+      slice_sort: lexical                  # 切片按名称排序；箱线图统计不依赖显示顺序。
+      output_stem: p22_pca25_internal_spatial_boxplot # 输出 PDF 文件名主干。
+      figure_size: [5.2, 4.2]              # 图像宽和高，单位英寸；为八个模型保留足够纵向空间。
+      font_size: 8.5                       # 图中基础字体大小，单位 pt。
+      box_width: 0.48                      # 每个横向箱体的垂直宽度。
+      box_alpha: 0.86                      # 箱体填充透明度；范围为 0–1。
+      axis:
+        mode: per_metric                   # 两个指标分别根据自身数据范围设置横轴。
+        padding: 0.025                     # 横轴在观测最小值和最大值之外增加的最小留白。
+        round_step: 0.05                   # 横轴上下限按 0.05 向外取整。
+        min_width: 0.20                    # 每个指标横轴至少保留 0.20 的显示跨度。
+      style:
+        panel_background_1: '#FFFFFF'      # Silhouette 面板背景色。
+        panel_background_2: '#F4F4F4'      # Moran's I 面板背景色。
+        box_edge_color: '#4A4A4A'          # 箱体、须和端帽的边框颜色。
+        median_color: '#222222'            # 箱体中位数线颜色。
+        grid_color: '#DEDEDE'              # 横轴参考网格线颜色。
+
+    p22_pca25_supplementary_internal_boxplot:
+      type: boxplot # 图类型；横向箱线图矩阵。
+      input_csv: results/benchmark_results_supplementary/p22_pca25/metrics_comparison.csv # 新增指标与原 benchmark 的完整对照长表。
+      output_dir: results/benchmark_figures/boxplots/p22_supplementary # 补充指标图的独立目录；只输出 PDF。
+      dataset: mouse_brain_p22 # 数据集名称。
+      slices: [mouse_brain_ATAC, mouse_brain_H3K27ac, mouse_brain_H3K27me3, mouse_brain_H3K4me3] # 统计 P22 四张切片。
+      evaluation_id: pca25_truth_k # 七个标准模型使用 PCA-25；WNN 自动按共享规则读取原生二维结果。
+      evaluation_role: primary # 七个标准模型的评估角色。
+      metric_group: internal # 只绘制内部几何指标。
+      metrics: [silhouette, calinski_harabasz, davies_bouldin] # 三个面板的指标顺序。
+      metric_labels: # 指标标题；箭头表示更好的方向。
+        silhouette: Silhouette ↑ # 轮廓系数越高越好。
+        calinski_harabasz: CH ↑ (log scale) # CH 越高越好，使用对数横轴显示大数值跨度。
+        davies_bouldin: DBI ↓ # DBI 越低越好。
+      expected_n_slices: 4 # 每个模型每项指标必须完整含四张切片。
+      output_stem: p22_pca25_supplementary_internal_boxplot # PDF 文件名主干。
+      figure_size: [7.5, 4.94] # 图像宽高，单位英寸。
+      left_margin: 0.145 # 左侧模型名称占用的画布比例。
+      panel_spacing: 0.18 # 相邻指标面板的水平间距。
+      show_points: true # 在箱体上显示四张切片的原始数值，方便查看小样本分布。
+      point_size: 10 # 原始数据点面积，单位 pt²。
+      axis: # 各指标独立缩放，避免把 CH/DBI 截断在 0–1。
+        mode: per_metric # 每项指标独立计算范围。
+        padding: 0.025 # 线性横轴的最小留白。
+        round_step: 0.05 # 线性横轴的取整步长。
+        min_width: 0.20 # 线性横轴的最小跨度。
+        by_metric: # 按指标覆盖横轴设置。
+          calinski_harabasz: # CH 数值远大于 1，采用对数显示。
+            scale: log # 横轴使用 log10 缩放，绘图值仍是原始 CH。
+            log_padding_factor: 1.3 # 最小值除以、最大值乘以该比例作为留白。
+            tick_format: '%.0f' # 对数轴刻度直接显示整数数值。
+          davies_bouldin: # DBI 可以大于 1。
+            bounds: [0, null] # 只限制下界为 0，上界随实际数据变化。
+            round_step: 0.25 # DBI 横轴上下限按 0.25 取整。
+
+    p22_pca25_supplementary_spatial_boxplot:
+      type: boxplot # 图类型；横向箱线图矩阵。
+      input_csv: results/benchmark_results_supplementary/p22_pca25/metrics_comparison.csv # 新增指标与原 benchmark 的完整对照长表。
+      output_dir: results/benchmark_figures/boxplots/p22_supplementary # 补充指标图的独立目录；只输出 PDF。
+      dataset: mouse_brain_p22 # 数据集名称。
+      slices: [mouse_brain_ATAC, mouse_brain_H3K27ac, mouse_brain_H3K27me3, mouse_brain_H3K4me3] # 统计 P22 四张切片。
+      evaluation_id: pca25_truth_k # 七个标准模型使用 PCA-25；WNN 自动按共享规则读取原生二维结果。
+      evaluation_role: primary # 七个标准模型的评估角色。
+      metric_group: spatial # 只绘制空间结构指标。
+      metrics: [cluster_morans_i, cluster_gearys_c, PAS_k6, PAS_k10, neighbor_agreement_k6, CHAOS] # 六项空间指标全部保留，便于比较和选择。
+      metric_labels: # 指标标题；箭头表示更好的方向。
+        cluster_morans_i: Moran's I ↑ # 空间自相关越高越好。
+        cluster_gearys_c: Geary's C ↓ # 局部空间差异越低越好。
+        PAS_k6: PAS-6 ↓ # 六邻居局部异常 spot 比例越低越好。
+        PAS_k10: PAS-10 ↓ # 十邻居局部异常 spot 比例越低越好。
+        neighbor_agreement_k6: Neighbor agreement ↑ # 六邻居同标签比例越高越好。
+        CHAOS: CHAOS ↓ # 同簇空间最近邻距离越低越好。
+      expected_n_slices: 4 # 每个模型每项指标必须完整含四张切片。
+      output_stem: p22_pca25_supplementary_spatial_boxplot # PDF 文件名主干。
+      figure_size: [12.8, 4.94] # 图像宽高，单位英寸；容纳六个可读面板。
+      left_margin: 0.095 # 左侧模型名称占用的画布比例。
+      panel_spacing: 0.18 # 相邻指标面板的水平间距。
+      show_points: true # 在箱体上显示四张切片的原始数值。
+      point_size: 10 # 原始数据点面积，单位 pt²。
+      axis: # 空间指标按自身数值范围缩放。
+        mode: per_metric # 每项指标独立计算范围。
+        padding: 0.025 # 横轴的最小留白。
+        round_step: 0.05 # 横轴上下限取整步长。
+        min_width: 0.20 # 横轴的最小跨度。
+        by_metric: # 按指标覆盖横轴设置。
+          cluster_gearys_c: # Geary's C 理论上可以超过 1。
+            bounds: [0, null] # 下界为 0，上界随实际数据变化。
+          CHAOS: # CHAOS 数值较小，使用更精细的横轴范围。
+            padding: 0.001 # CHAOS 横轴的最小留白。
+            round_step: 0.005 # CHAOS 横轴上下限取整步长。
+            min_width: 0.02 # CHAOS 横轴至少保留 0.02 的跨度。
+            bounds: [0, null] # 不将 CHAOS 限制在 0–1。
+            tick_format: '%.3f' # CHAOS 刻度保留三位小数。
+
+    p22_pca25_moran_chaos_pas10_boxplot:
+      type: boxplot # 图类型；横向箱线图矩阵。
+      input_csv: results/benchmark_results_supplementary/p22_pca25/metrics_comparison.csv # 读取已有指标，不重新聚类。
+      output_dir: results/benchmark_figures/boxplots/p22_supplementary # 三项空间指标的 PDF 保存目录。
+      dataset: mouse_brain_p22 # 要比较的数据集。
+      slices: [mouse_brain_ATAC, mouse_brain_H3K27ac, mouse_brain_H3K27me3, mouse_brain_H3K4me3] # 汇总 P22 的四张切片。
+      evaluation_id: pca25_truth_k # 标准模型使用 PCA-25；WNN 沿用共享配置中的自身二维结果。
+      evaluation_role: primary # 标准模型的评估角色。
+      metric_group: spatial # 仅选择空间一致性指标。
+      metrics: [cluster_morans_i, CHAOS, PAS_k10] # 从左到右的指标顺序。
+      metric_labels: # 各面板标题，不显示方向箭头。
+        cluster_morans_i: Moran's I # 空间自相关越高越好。
+        CHAOS: CHAOS # 同簇最近邻空间距离越低越好。
+        PAS_k10: PAS-10 # 十邻居局部异常 spot 比例越低越好。
+      expected_n_slices: 4 # 每个模型每项指标必须含四张切片。
+      output_stem: p22_pca25_moran_chaos_pas10_boxplot # 新 PDF 的文件名，不覆盖六项指标的探索图。
+      figure_size: [7.5, 4.94] # 画布宽高，单位英寸。
+      left_margin: 0.145 # 左侧模型名称的画布留白比例。
+      panel_spacing: 0.18 # 三个指标面板之间的水平间距。
+      show_points: false # 不叠加原始数据点，保持与之前箱线图相同的样式。
+      point_size: 10 # 数据点面积，单位 pt²。
+      axis: # 按指标的数值范围独立设置横轴。
+        mode: per_metric # 每项指标单独缩放，不统一数值范围。
+        padding: 0.025 # 默认横轴最小留白。
+        round_step: 0.05 # 默认横轴边界的取整步长。
+        min_width: 0.20 # 默认横轴最小跨度。
+        by_metric: # 指定指标的横轴覆盖配置。
+          CHAOS: # CHAOS 数值较小，需要更精细的刻度。
+            padding: 0.001 # CHAOS 横轴最小留白。
+            round_step: 0.005 # CHAOS 横轴边界的取整步长。
+            min_width: 0.02 # CHAOS 横轴最小跨度。
+            bounds: [0, null] # 下界不小于零，上界不固定。
+            tick_format: '%.3f' # CHAOS 刻度保留三位小数。
+
+    human_tonsil_slice1_maps:
+      type: spatial_umap_maps               # 同时导出 Human tonsil slice1 的 Spatial 与 UMAP PDF。
+      dataset: human_tonsil                  # 数据集目录名称。
+      slice: slice1                          # 待绘制切片名称。
+      evaluation_id: tonsil_k6_primary       # 使用 K=6 主分析的 mclust prediction。
+      evaluation_role: primary                # 标记为主分析结果。
+      method_order: [BioSFIB, SMART, SpaDDM, MultiGATE, SpatialGlue, COSMOS, MISO, SeuratWNN] # 参与比较的八种模型；SeuratWNN 使用自身原生二维结果。
+      prediction_dirs_by_method:
+        COSMOS: results/benchmark_results_expanded/predictions # COSMOS prediction 的增量输出根目录。
+        MISO: results/benchmark_results_expanded/predictions # MISO prediction 的增量输出根目录。
+        SeuratWNN: results/benchmark_results_seurat_wnn/predictions # SeuratWNN 原生二维 prediction 的独立输出根目录。
+      prediction_evaluation_ids_by_method:
+        SeuratWNN: native_2d_k6_primary # SeuratWNN 在 tonsil K=6 下的自身评估条件。
+      umap_source_keys_by_method:
+        SeuratWNN: X_model_native_2d # SeuratWNN 使用原生二维坐标作为二维嵌入图坐标。
+      umap_precomputed_methods: [SeuratWNN] # 此方法已有二维坐标，绘图时不二次计算 UMAP。
+      output_stem: human_tonsil_slice1       # Spatial 与 UMAP PDF 的共同文件名主干。
+      colors:
+        truth_palette: ['#1F77B4', '#FF7F0E', '#2CA02C', '#D62728', '#9467BD', '#8C564B'] # 与其他切片一致的高区分蓝、橙、绿、红、紫、棕配色；避免红/深红、黄/橙相近。
+        unmatched_palette: Set1              # 未匹配预测簇使用高对比 Set1，避免默认浅色。
+      spatial:
+        display_target_span: [881.0, 835.0] # 仅显示时将 Slice 1 映射至 Slice 3 的 X/Y 坐标跨度；不写回原始 H5AD。
+      layout:
+        composite_size: [18.0, 4.0]          # 八个面板（真值+七模型）的合成图尺寸，单位英寸。
+        single_panel_size: [2.5, 2.5]        # 单独 panel PDF 的尺寸，单位英寸。
+        tight_bbox: false                     # 关闭按图例文字自动裁切，固定 PDF 画布，保证三个 Tonsil 切片的 panel 物理尺寸一致。
+
+    human_tonsil_slice2_maps:
+      type: spatial_umap_maps               # 同时导出 Human tonsil slice2 的 Spatial 与 UMAP PDF。
+      dataset: human_tonsil                  # 数据集目录名称。
+      slice: slice2                          # 待绘制切片名称。
+      evaluation_id: tonsil_k6_primary       # 使用 K=6 主分析的 mclust prediction。
+      evaluation_role: primary                # 标记为主分析结果。
+      method_order: [BioSFIB, SMART, SpaDDM, MultiGATE, SpatialGlue, COSMOS, MISO, SeuratWNN] # 参与比较的八种模型；SeuratWNN 使用自身原生二维结果。
+      prediction_dirs_by_method:
+        COSMOS: results/benchmark_results_expanded/predictions # COSMOS prediction 的增量输出根目录。
+        MISO: results/benchmark_results_expanded/predictions # MISO prediction 的增量输出根目录。
+        SeuratWNN: results/benchmark_results_seurat_wnn/predictions # SeuratWNN 原生二维 prediction 的独立输出根目录。
+      prediction_evaluation_ids_by_method:
+        SeuratWNN: native_2d_k6_primary # SeuratWNN 在 tonsil K=6 下的自身评估条件。
+      umap_source_keys_by_method:
+        SeuratWNN: X_model_native_2d # SeuratWNN 使用原生二维坐标作为二维嵌入图坐标。
+      umap_precomputed_methods: [SeuratWNN] # 此方法已有二维坐标，绘图时不二次计算 UMAP。
+      output_stem: human_tonsil_slice2       # Spatial 与 UMAP PDF 的共同文件名主干。
+      colors:
+        truth_palette: ['#1F77B4', '#FF7F0E', '#2CA02C', '#D62728', '#9467BD', '#8C564B'] # 与其他切片一致的高区分蓝、橙、绿、红、紫、棕配色；避免红/深红、黄/橙相近。
+        unmatched_palette: Set1              # 未匹配预测簇使用高对比 Set1，避免默认浅色。
+      spatial:
+        display_target_span: [881.0, 835.0] # 仅显示时将 Slice 2 映射至 Slice 3 的 X/Y 坐标跨度；不写回原始 H5AD。
+      layout:
+        composite_size: [18.0, 4.0]          # 八个面板（真值+七模型）的合成图尺寸，单位英寸。
+        single_panel_size: [2.5, 2.5]        # 单独 panel PDF 的尺寸，单位英寸。
+        tight_bbox: false                     # 关闭按图例文字自动裁切，固定 PDF 画布，保证三个 Tonsil 切片的 panel 物理尺寸一致。
+
+    human_tonsil_slice3_maps:
+      type: spatial_umap_maps               # 同时导出 Human tonsil slice3 的 Spatial 与 UMAP PDF。
+      dataset: human_tonsil                  # 数据集目录名称。
+      slice: slice3                          # 待绘制切片名称。
+      evaluation_id: tonsil_k6_primary       # 使用 K=6 主分析的 mclust prediction。
+      evaluation_role: primary                # 标记为主分析结果。
+      method_order: [BioSFIB, SMART, SpaDDM, MultiGATE, SpatialGlue, COSMOS, MISO, SeuratWNN] # 参与比较的八种模型；SeuratWNN 使用自身原生二维结果。
+      prediction_dirs_by_method:
+        COSMOS: results/benchmark_results_expanded/predictions # COSMOS prediction 的增量输出根目录。
+        MISO: results/benchmark_results_expanded/predictions # MISO prediction 的增量输出根目录。
+        SeuratWNN: results/benchmark_results_seurat_wnn/predictions # SeuratWNN 原生二维 prediction 的独立输出根目录。
+      prediction_evaluation_ids_by_method:
+        SeuratWNN: native_2d_k6_primary # SeuratWNN 在 tonsil K=6 下的自身评估条件。
+      umap_source_keys_by_method:
+        SeuratWNN: X_model_native_2d # SeuratWNN 使用原生二维坐标作为二维嵌入图坐标。
+      umap_precomputed_methods: [SeuratWNN] # 此方法已有二维坐标，绘图时不二次计算 UMAP。
+      output_stem: human_tonsil_slice3       # Spatial 与 UMAP PDF 的共同文件名主干。
+      colors:
+        truth_palette: ['#1F77B4', '#FF7F0E', '#2CA02C', '#D62728', '#9467BD', '#8C564B'] # 与其他切片一致的高区分蓝、橙、绿、红、紫、棕配色；避免红/深红、黄/橙相近。
+        unmatched_palette: Set1              # 未匹配预测簇使用高对比 Set1，避免默认浅色。
+      layout:
+        composite_size: [18.0, 4.0]          # 八个面板（真值+七模型）的合成图尺寸，单位英寸。
+        single_panel_size: [2.5, 2.5]        # 单独 panel PDF 的尺寸，单位英寸。
+        tight_bbox: false                     # 关闭按图例文字自动裁切，固定 PDF 画布，保证三个 Tonsil 切片的 panel 物理尺寸一致。
+
+    mouse_spleen1_maps:
+      type: spatial_umap_maps               # 同时导出 mouse spleen1 的 Spatial 与 UMAP PDF。
+      dataset: mouse_spleen                  # 数据集目录名称。
+      slice: mouse_spleen1                   # 待绘制切片名称。
+      evaluation_id: pca20_manual_k          # 无真值数据集的 PCA-20、手动 K 条件。
+      evaluation_role: primary                # 标记为主内部/空间分析。
+      method_order: [BioSFIB, SMART, SpaDDM, SpatialGlue, COSMOS, MISO, SeuratWNN] # 排除 MultiGATE、纳入 SeuratWNN 原生二维结果的七种模型。
+      prediction_dir: results/benchmark_results_expanded/predictions # 所有可用 prediction 位于本轮增量输出目录。
+      prediction_evaluation_ids_by_method:
+        SeuratWNN: native_2d_manual_k # spleen 的 SeuratWNN 原生二维手动 K 条件。
+      output_stem: mouse_spleen1             # Spatial 与 UMAP PDF 的共同文件名主干。
+      show_truth: false                       # 无独立真值，不绘制 Ground truth panel。
+      color_mode: raw_clusters                # 以原始 mclust 簇编号共享颜色。
+      legends:
+        truth: false                          # 无真值，不显示真值图例。
+        clusters: true                        # 显示原始簇编号图例。
+      layout:
+        composite_size: [14.0, 3.8]           # 六模型合成图尺寸，单位英寸。
+      spatial:
+        point_size: 6                          # spleen spot 较密，缩小空间图散点面积以减少遮挡。
+
+    mouse_spleen2_maps:
+      type: spatial_umap_maps               # 同时导出 mouse spleen2 的 Spatial 与 UMAP PDF。
+      dataset: mouse_spleen                  # 数据集目录名称。
+      slice: mouse_spleen2                   # 待绘制切片名称。
+      evaluation_id: pca20_manual_k          # 无真值数据集的 PCA-20、手动 K 条件。
+      evaluation_role: primary                # 标记为主内部/空间分析。
+      method_order: [BioSFIB, SMART, SpaDDM, SpatialGlue, COSMOS, MISO, SeuratWNN] # 排除 MultiGATE、纳入 SeuratWNN 原生二维结果的七种模型。
+      prediction_dir: results/benchmark_results_expanded/predictions # 所有可用 prediction 位于本轮增量输出目录。
+      prediction_evaluation_ids_by_method:
+        SeuratWNN: native_2d_manual_k # spleen 的 SeuratWNN 原生二维手动 K 条件。
+      output_stem: mouse_spleen2             # Spatial 与 UMAP PDF 的共同文件名主干。
+      show_truth: false                       # 无独立真值，不绘制 Ground truth panel。
+      color_mode: raw_clusters                # 以原始 mclust 簇编号共享颜色。
+      legends:
+        truth: false                          # 无真值，不显示真值图例。
+        clusters: true                        # 显示原始簇编号图例。
+      layout:
+        composite_size: [14.0, 3.8]           # 六模型合成图尺寸，单位英寸。
+      spatial:
+        point_size: 6                          # spleen spot 较密，缩小空间图散点面积以减少遮挡。
+
+    mouse_thymus1_maps:
+      type: spatial_umap_maps               # 同时导出 mouse thymus1 的 Spatial 与 UMAP PDF。
+      dataset: mouse_thymus                  # 数据集目录名称。
+      slice: mouse_thymus1                   # 待绘制切片名称。
+      evaluation_id: pca20_manual_k          # 无真值数据集的 PCA-20、手动 K 条件。
+      evaluation_role: primary                # 标记为主内部/空间分析。
+      method_order: [BioSFIB, SMART, SpaDDM, SpatialGlue, COSMOS, MISO, SeuratWNN] # 排除 MultiGATE、纳入 SeuratWNN 原生二维结果的七种模型。
+      prediction_dir: results/benchmark_results_expanded/predictions # 所有可用 prediction 位于本轮增量输出目录。
+      prediction_evaluation_ids_by_method:
+        SeuratWNN: native_2d_manual_k # thymus 的 SeuratWNN 原生二维手动 K 条件。
+      output_stem: mouse_thymus1             # Spatial 与 UMAP PDF 的共同文件名主干。
+      show_truth: false                       # 无独立真值，不绘制 Ground truth panel。
+      color_mode: raw_clusters                # 以原始 mclust 簇编号共享颜色。
+      legends:
+        truth: false                          # 无真值，不显示真值图例。
+        clusters: true                        # 显示原始簇编号图例。
+      spatial:
+        point_size: 6                          # thymus spot 较密，缩小空间图散点面积以减少遮挡。
+
+    mouse_thymus2_maps:
+      type: spatial_umap_maps               # 同时导出 mouse thymus2 的 Spatial 与 UMAP PDF。
+      dataset: mouse_thymus                  # 数据集目录名称。
+      slice: mouse_thymus2                   # 待绘制切片名称。
+      evaluation_id: pca20_manual_k          # 无真值数据集的 PCA-20、手动 K 条件。
+      evaluation_role: primary                # 标记为主内部/空间分析。
+      method_order: [BioSFIB, SMART, SpaDDM, SpatialGlue, COSMOS, MISO, SeuratWNN] # 排除 MultiGATE、纳入 SeuratWNN 原生二维结果的七种模型。
+      prediction_dir: results/benchmark_results_expanded/predictions # 所有可用 prediction 位于本轮增量输出目录。
+      prediction_evaluation_ids_by_method:
+        SeuratWNN: native_2d_manual_k # thymus 的 SeuratWNN 原生二维手动 K 条件。
+      output_stem: mouse_thymus2             # Spatial 与 UMAP PDF 的共同文件名主干。
+      show_truth: false                       # 无独立真值，不绘制 Ground truth panel。
+      color_mode: raw_clusters                # 以原始 mclust 簇编号共享颜色。
+      legends:
+        truth: false                          # 无真值，不显示真值图例。
+        clusters: true                        # 显示原始簇编号图例。
+      spatial:
+        point_size: 6                          # thymus spot 较密，缩小空间图散点面积以减少遮挡。
+
+    mouse_thymus3_maps:
+      type: spatial_umap_maps               # 同时导出 mouse thymus3 的 Spatial 与 UMAP PDF。
+      dataset: mouse_thymus                  # 数据集目录名称。
+      slice: mouse_thymus3                   # 待绘制切片名称。
+      evaluation_id: pca20_manual_k          # 无真值数据集的 PCA-20、手动 K 条件。
+      evaluation_role: primary                # 标记为主内部/空间分析。
+      method_order: [BioSFIB, SMART, SpaDDM, SpatialGlue, COSMOS, MISO, SeuratWNN] # 排除 MultiGATE、纳入 SeuratWNN 原生二维结果的七种模型。
+      prediction_dir: results/benchmark_results_expanded/predictions # 所有可用 prediction 位于本轮增量输出目录。
+      prediction_evaluation_ids_by_method:
+        SeuratWNN: native_2d_manual_k # thymus 的 SeuratWNN 原生二维手动 K 条件。
+      output_stem: mouse_thymus3             # Spatial 与 UMAP PDF 的共同文件名主干。
+      show_truth: false                       # 无独立真值，不绘制 Ground truth panel。
+      color_mode: raw_clusters                # 以原始 mclust 簇编号共享颜色。
+      legends:
+        truth: false                          # 无真值，不显示真值图例。
+        clusters: true                        # 显示原始簇编号图例。
+      spatial:
+        point_size: 6                          # thymus spot 较密，缩小空间图散点面积以减少遮挡。
+
+    mouse_thymus4_maps:
+      type: spatial_umap_maps               # 同时导出 mouse thymus4 的 Spatial 与 UMAP PDF。
+      dataset: mouse_thymus                  # 数据集目录名称。
+      slice: mouse_thymus4                   # 待绘制切片名称。
+      evaluation_id: pca20_manual_k          # 无真值数据集的 PCA-20、手动 K 条件。
+      evaluation_role: primary                # 标记为主内部/空间分析。
+      method_order: [BioSFIB, SMART, SpaDDM, SpatialGlue, COSMOS, MISO, SeuratWNN] # 排除 MultiGATE、纳入 SeuratWNN 原生二维结果的七种模型。
+      prediction_dir: results/benchmark_results_expanded/predictions # 所有可用 prediction 位于本轮增量输出目录。
+      prediction_evaluation_ids_by_method:
+        SeuratWNN: native_2d_manual_k # thymus 的 SeuratWNN 原生二维手动 K 条件。
+      output_stem: mouse_thymus4             # Spatial 与 UMAP PDF 的共同文件名主干。
+      show_truth: false                       # 无独立真值，不绘制 Ground truth panel。
+      color_mode: raw_clusters                # 以原始 mclust 簇编号共享颜色。
+      legends:
+        truth: false                          # 无真值，不显示真值图例。
+        clusters: true                        # 显示原始簇编号图例。
+      spatial:
+        point_size: 6                          # thymus spot 较密，缩小空间图散点面积以减少遮挡。
+
+    mouse_spleen_boxplot:
+      type: boxplot                        # 图类型；横向箱线图矩阵。
+      output_dir: results/benchmark_figures/boxplots # 本图输出目录。
+      dataset: mouse_spleen               # 从 CSV 筛选的数据集名称。
+      slices: [mouse_spleen1, mouse_spleen2] # 仅纳入 spleen 的两个切片。
+      evaluation_id: pca20_manual_k       # PCA-20、人工设定 K 的主实验条件。
+      evaluation_role: primary            # 主实验角色。
+      metric_groups: [internal, spatial]  # 同时读取内部指标与空间指标。
+      metrics: [silhouette, cluster_morans_i] # 箱线图面板显示顺序：轮廓系数、莫兰系数。
+      method_order: [MISO, COSMOS, SpatialGlue, SpaDDM, SMART, BioSFIB] # spleen 六个模型按原顺序完全反转，BioSFIB 位于最下方。
+      expected_n_slices: 2                # 每个方法×指标应包含 2 个切片。
+      slice_sort: lexical                 # 切片按名称字典序排序。
+      output_stem: mouse_spleen_pca20_boxplot # 输出文件名主干。
+      figure_size: [5.2, 4.2]            # 图片宽和高，单位英寸。
+      font_size: 8.5                      # 基础字体大小，单位 pt。
+      box_width: 0.48                     # 箱体宽度。
+      box_alpha: 0.86                     # 箱体透明度。
+      axis:
+        mode: per_metric                  # 每个指标面板单独计算横轴范围。
+        padding: 0.025                    # 横轴自动留白。
+        round_step: 0.05                  # 横轴刻度取整步长。
+        min_width: 0.20                   # 横轴最小显示跨度。
+      style:
+        panel_background_1: '#FFFFFF'     # 奇数面板背景色。
+        panel_background_2: '#F4F4F4'     # 偶数面板背景色。
+        box_edge_color: '#4A4A4A'         # 箱线边框颜色。
+        median_color: '#222222'           # 中位数线颜色。
+        grid_color: '#DEDEDE'             # 纵向网格线颜色。
+
+    mouse_thymus_boxplot:
+      type: boxplot                        # 图类型；横向箱线图矩阵。
+      output_dir: results/benchmark_figures/boxplots # 本图输出目录。
+      dataset: mouse_thymus               # 从 CSV 筛选的数据集名称。
+      slices: [mouse_thymus1, mouse_thymus2, mouse_thymus3, mouse_thymus4] # 仅纳入 thymus 的四个切片。
+      evaluation_id: pca20_manual_k       # PCA-20、人工设定 K 的主实验条件。
+      evaluation_role: primary            # 主实验角色。
+      metric_groups: [internal, spatial]  # 同时读取内部指标与空间指标。
+      metrics: [silhouette, cluster_morans_i] # 箱线图面板显示顺序：轮廓系数、莫兰系数。
+      method_order: [MISO, COSMOS, SpatialGlue, SpaDDM, SMART, BioSFIB] # thymus 六个模型按原顺序完全反转，BioSFIB 位于最下方。
+      expected_n_slices: 4                # 每个方法×指标应包含 4 个切片。
+      slice_sort: lexical                 # 切片按名称字典序排序。
+      output_stem: mouse_thymus_pca20_boxplot # 输出文件名主干。
+      figure_size: [5.2, 4.2]            # 图片宽和高，单位英寸。
+      font_size: 8.5                      # 基础字体大小，单位 pt。
+      box_width: 0.48                     # 箱体宽度。
+      box_alpha: 0.86                     # 箱体透明度。
+      axis:
+        mode: per_metric                  # 每个指标面板单独计算横轴范围。
+        padding: 0.025                    # 横轴自动留白。
+        round_step: 0.05                  # 横轴刻度取整步长。
+        min_width: 0.20                   # 横轴最小显示跨度。
+      style:
+        panel_background_1: '#FFFFFF'     # 奇数面板背景色。
+        panel_background_2: '#F4F4F4'     # 偶数面板背景色。
+        box_edge_color: '#4A4A4A'         # 箱线边框颜色。
+        median_color: '#222222'           # 中位数线颜色。
+        grid_color: '#DEDEDE'             # 纵向网格线颜色。
+
+    mouse_thymus1_bubble:
+      type: bubble_matrix                  # 图类型；单切片圆点矩阵。
+      output_dir: results/benchmark_figures/bubble_matrices # 本图输出目录；仅输出 PDF。
+      dataset: mouse_thymus               # 从 CSV 筛选的数据集名称。
+      slice: mouse_thymus1                # 选择 thymus1 作为单切片展示。
+      evaluation_id: pca20_manual_k       # PCA-20、人工设定 K 的主实验条件。
+      evaluation_role: primary            # 主实验角色。
+      metric_groups: [internal, spatial]  # 同时读取内部指标与空间指标。
+      metrics: [silhouette, cluster_morans_i] # 圆点列从左到右显示：轮廓系数、莫兰系数。
+      method_order: [MISO, COSMOS, SpatialGlue, SpaDDM, SMART, BioSFIB] # thymus 六个模型按原顺序完全反转，BioSFIB 位于最下方。
+      output_stem: mouse_thymus1_pca20_bubble # 输出 PDF 文件名主干。
+      show_panel_title: false             # 不显示顶部标题，便于论文后期拼版。
+      panel_title: ''                     # show_panel_title=true 时使用的标题；当前留空。
+      figure_size: [7.2, 3.65]           # 图片宽和高，单位英寸。
+      dot_size: 650                       # 所有圆点固定面积；不使用大小表达指标数值。
+      font_size: 9                        # 基础字体大小，单位 pt。
+      metric_group_title: Unsupervised clustering quality # 圆点指标区上方标题。
+      aggregate_title: Aggregate score    # 右侧均值区上方标题。
+      aggregate_label: Mean               # 右侧均值列标题。
+      aggregate_metric_name: Unsupervised mean # 右侧均值在脚本内部使用的列名。
+      colorbar_label: Metric value        # 色条标题。
+
+    simulation_123456_boxplot:
+      type: boxplot                         # 图类型；横向箱线图矩阵。
+      output_dir: results/benchmark_figures/boxplots # 本图输出目录。
+      dataset: simulation                   # 从 CSV 筛选 simulation 数据集。
+      slices: [simulation1, simulation2, simulation3, simulation4, simulation5, simulation6] # 纳入全部六个模拟切片。
+      evaluation_id: pca20_truth_k          # PCA-20、真实标签 K 的主实验条件。
+      evaluation_role: primary              # 主实验角色。
+      metric_group: external                # 绘制外部聚类评价指标。
+      metrics: [ARI, NMI, AMI, V_MEASURE, HOM, FMI] # 箱线图面板从左到右的显示顺序。
+      method_order:                         # PCA-20 主实验模型按原顺序完全反转。
+        - SeuratWNN
+        - MISO
+        - COSMOS
+        - SpatialGlue
+        - MultiGATE
+        - SpaDDM
+        - SMART
+        - BioSFIB
+      expected_n_slices: 6                  # 每个方法×指标必须包含六个切片结果。
+      slice_sort: lexical                   # 切片按照名称字典序排序。
+      output_stem: simulation_123456_pca20_boxplot # 输出 PDF 文件名主干。
+      axis:
+        mode: per_metric
+        padding: 0.025
+        round_step: 0.05
+        min_width: 0.20
+        hide_tick_labels: [0.25]       # 隐藏 0.25 的刻度文字，避免与前一面板的 1.00 重叠。

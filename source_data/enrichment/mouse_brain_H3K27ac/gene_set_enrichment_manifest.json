@@ -1,0 +1,102 @@
+{
+  "status": "ok",
+  "analysis": "cluster-wise RNA ORA",
+  "created_utc": "2026-07-23T04:24:14.758765+00:00",
+  "dataset_key": "mouse_brain_H3K27ac",
+  "organism": "mmusculus",
+  "sources": [
+    "GO:BP",
+    "KEGG"
+  ],
+  "api_url": "https://biit.cs.ut.ee/gprofiler/api/gost/profile/",
+  "database_versions": [
+    "e114_eg62_p19_27110d83"
+  ],
+  "offline_from_cache": false,
+  "parameters": {
+    "background_min_fraction": 0.01,
+    "marker_padj_cutoff": 0.01,
+    "marker_logfc_min": 0.0,
+    "min_query_genes": 10,
+    "max_query_genes": 50,
+    "min_term_size": 10,
+    "max_term_size": 500,
+    "fdr_cutoff": 0.05,
+    "correction": "Benjamini-Hochberg FDR",
+    "domain_scope": "custom",
+    "go_redundancy_jaccard": 0.7
+  },
+  "inputs": {
+    "config": "source_archive/SF_Project/configs/best_results_20260623/MOUSE_BRAIN_P22/config_mouse_brain_H3K27ac_rerun_epoch1800.yaml",
+    "config_sha256": "6dd9a6071ff2f05dccd8a12b5fd1f0821872f92b67443f89c41d35815ddefb67",
+    "marker_csv": "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K27ac/downstream_analyses_epoch1800_mEEE_pca25/marker_genes/top50_marker_genes_by_cluster.csv",
+    "marker_csv_sha256": "986571ca03bfce2dd83411ce19dae22b1e05ff1857b234c31f0cd0d651af0719",
+    "marker_schema": {
+      "gene_column": "Gene",
+      "cluster_column": "Cluster",
+      "padj_column": "P_value_adj",
+      "logfc_column": "LogFoldChange",
+      "n_input_rows": 800,
+      "n_filtered_rows": 756
+    },
+    "raw_background_source": "source_archive/SF_Project/data/raw/mouse_brain_p22/mouse_brain_H3K27ac/adata_RNA.h5ad",
+    "background_details": {
+      "n_spots": 9370,
+      "n_features": 23415,
+      "min_spots": 94,
+      "mode": "expressed_in_min_fraction",
+      "min_fraction": 0.01
+    },
+    "background_gene_file": "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K27ac/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/expressed_rna_background.txt",
+    "background_gene_file_sha256": "a2378856e3a7d37e304bb4eb659ac2beda2d497349cc74d66390ebb67d12c82a",
+    "module_map": "source_archive/SF_Project/configs/enrichment/p22_rna_functional_modules.yaml",
+    "module_map_sha256": "3364e879252c255d1751329d244613f996855c234c39ef061bb6ad3862c5a59b"
+  },
+  "counts": {
+    "background_genes": 12283,
+    "clusters_seen": 16,
+    "cluster_status": {
+      "ready": 15,
+      "insufficient_genes": 1
+    },
+    "all_terms": 19655,
+    "significant_terms": 1600,
+    "plot_terms": 36
+  },
+  "outputs": {
+    "input_qc": "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K27ac/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/enrichment_input_qc.csv",
+    "all_results": "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K27ac/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/enrichment_all_results.csv",
+    "significant_results": "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K27ac/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/enrichment_significant_results.csv",
+    "plot_data": "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K27ac/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/enrichment_plot_data.csv",
+    "figures": [
+      "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K27ac/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/go_bp_enrichment_dotplot.pdf",
+      "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K27ac/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/go_bp_enrichment_dotplot.png",
+      "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K27ac/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/kegg_enrichment_dotplot.pdf",
+      "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K27ac/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/kegg_enrichment_dotplot.png"
+    ],
+    "cached_responses": [
+      "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K27ac/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/api_cache/0ee3e4f8e962cdf2da1006fdbced90a0ec1e8fdc0573bb0f814487ad8deedc29.response.json",
+      "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K27ac/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/api_cache/81f8e5690b5f2edeb54f7747e5c826bcc232e6464c1ca52682278be36352f321.response.json",
+      "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K27ac/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/api_cache/67d2b415ee323c4fafc0d08fc33910b379d43f3541e8631e0b894fa5c5d484d4.response.json",
+      "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K27ac/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/api_cache/ac718c451d36e5d999c26ff77b995f0834e484b39897ec4c58c2464512832bfc.response.json",
+      "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K27ac/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/api_cache/98c076d1d1994067e1f60b7d56e2e85aab1dad29599c7bcf0949b11472ba4d37.response.json",
+      "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K27ac/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/api_cache/0491bd91cc9470f0647b384aa180ae373e3421a8bf727419aac5a0823700e291.response.json",
+      "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K27ac/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/api_cache/39b96ebc883d9130f165bf70609bd438d1ee77679d30f843e6454d475c4ef74f.response.json",
+      "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K27ac/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/api_cache/773008a7b8a8ed3e0e5cf53bb2abfe618f54bd86570f75d997583a7d7ff34ecf.response.json",
+      "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K27ac/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/api_cache/20394c2c05ecdf062ae1cad147b14b005a952edfadd43f59b427fb7496fced85.response.json",
+      "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K27ac/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/api_cache/d68939190a0d4589f9a87eab21611d39eafb1a252052c46da17e663aabc016c1.response.json",
+      "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K27ac/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/api_cache/f71c4d83f15dcfa4ccaa2da877c79f00d9048705589a32453795f2cd7977d2d3.response.json",
+      "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K27ac/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/api_cache/cc9d0b6d6ef400ac05efef7c886bc2dd70ab0f23b182843063efc4f3b3645112.response.json",
+      "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K27ac/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/api_cache/739340bdb2df69f4410d4a85ffbd3b8915fb4936044ecf312b8d4168bc36e2cb.response.json",
+      "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K27ac/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/api_cache/63a4689bbd7c96717a19854a92e468c6970c83f6361dd4786e8fafe37a4652e1.response.json",
+      "source_archive/SF_Project/results/best_results_20260623/MOUSE_BRAIN_P22/mouse_brain_H3K27ac/downstream_analyses_epoch1800_mEEE_pca25/rna_go_kegg_enrichment/api_cache/9efc33e7c9edfa55571fd53fea2110bbdd6eb3b0565e2986434b6f71ac4351b2.response.json"
+    ]
+  },
+  "warnings": [
+    "cluster_16: insufficient_genes"
+  ],
+  "runtime": {
+    "python": "3.9.18 (main, Sep 11 2023, 14:09:26) [MSC v.1916 64 bit (AMD64)]",
+    "platform": "Windows-10-10.0.26100-SP0"
+  }
+}

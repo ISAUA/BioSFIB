@@ -1,0 +1,31 @@
+# Pre-specified before enrichment results are observed. Cluster mappings are
+# based only on the existing RNA marker tables and are used for the P22 main
+# figure; unassigned clusters remain in the complete result tables.
+modules:
+  oligodendroglial_myelination:
+    label: Oligodendroglial / myelination
+    expected_markers: [Mbp, Plp1, Mobp, Mal, Mag]
+    clusters:
+      mouse_brain_ATAC: "12"
+      mouse_brain_H3K27ac: "12"
+
+  striatal_neuron:
+    label: Striatal neuron
+    expected_markers: [Pde10a, Rgs9, Gng7, Bcl11b]
+    clusters:
+      mouse_brain_ATAC: "2"
+      mouse_brain_H3K27ac: "11"
+
+  neurogenic_proliferative:
+    label: Neurogenic / proliferative
+    expected_markers: [Ccnd2, Sox4, Top2a]
+    clusters:
+      mouse_brain_ATAC: "17"
+      mouse_brain_H3K27ac: "14"
+
+  cortical_neuron:
+    label: Cortical neuron
+    expected_markers: [Rorb, Camk2n1, Mef2c, Nrgn]
+    clusters:
+      mouse_brain_ATAC: "5"
+      mouse_brain_H3K27ac: "3"

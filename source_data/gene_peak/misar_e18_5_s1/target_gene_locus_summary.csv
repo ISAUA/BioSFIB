@@ -1,0 +1,5 @@
+target_gene,status,chrom,tss,n_links,n_significant_links,n_candidate_links
+Gm29260,ok,chr1,41781808,1,1,0
+Pantr1,ok,chr1,42694842,1,1,0
+Satb2,ok,chr1,56978650,1,1,0
+Pou3f3,ok,chr1,42695768,1,1,0

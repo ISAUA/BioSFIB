@@ -1,0 +1,334 @@
+# BioSFIB 高质量空间域筛选与绘图配置。
+# 输入 H5AD 始终只读；脚本不会修改聚类、真值、embedding 或任何 benchmark 结果。
+
+default_analysis: misar_e18_5_s1 # 未提供 --analysis 时默认运行的分析名称。
+
+defaults:
+  cluster_key: BioSFIB # BioSFIB 原始 mclust 聚类所在的 .obs 列名。
+  truth_key: Combined_Clusters_annotation # 可靠真实组织标签所在的 .obs 列名；具体分析可覆盖。
+  spatial_key: spatial # 用于绘制空间位置的 .obsm 键名。
+  matching:
+    ignored_cluster_values: ['nan', 'na', 'none', ''] # 聚类列中视为无效的文本；这些 spot 不进入列联表。
+    ignored_truth_values: ['nan', 'na', 'none', ''] # 真值列中视为无效的文本；这些 spot 不进入列联表。
+    assignment_metric: overlap # 主配对使用的 Hungarian 权重；可选 overlap、f1、iou，overlap 与现有地图颜色匹配保持一致。
+    comparison_metrics: [overlap, iou] # 同时计算并比较的 Hungarian 配对；对应标签会写入审计 CSV。
+    require_agreement_for_selection: true # true 时只有主配对与所有比较配对指向同一真值的簇才允许入选。
+    label_aliases: {} # 真值原名到图中简写的映射；只改显示文字，不改匹配和分数。
+  selection:
+    mode: top_n # 自动筛选模式；当前在主 Hungarian 的正重叠配对中按 sort_by 分数取前若干个，改为 threshold 可恢复阈值筛选。
+    top_n: 6 # mode=top_n 时自动选择的空间域数量；真值类别或正配对少于 6 时绘制全部可用配对。
+    min_overlap_spots: 20 # 入选配对至少包含的重叠 spot 数；兼顾小型真实组织，同时排除极小偶然重叠。
+    min_cluster_spots: 20 # 入选 BioSFIB 聚类至少包含的有效 spot 数。
+    min_truth_spots: 20 # 入选真实组织区域至少包含的有效 spot 数。
+    min_purity: 0.70 # 最低 Purity，即匹配 spot 数除以预测簇 spot 数。
+    min_recall: 0.55 # 最低 Recall；允许边界略有漏检，但不接受只覆盖真实区域少数碎片的聚类。
+    min_f1: 0.70 # 最低 Domain F1/Dice；保持整体匹配质量至少达到较好水平。
+    min_iou: 0.00 # 最低 IoU；0 表示仅记录而不额外限制，可按论文要求提高。
+    sort_by: f1 # 通过全部阈值后，绘图列按哪个分数字段排序。
+    descending: true # true 表示分数从高到低排列。
+    max_domains: 8 # 图中最多展示的空间域数量；不会为了凑满该数量而降低阈值，null 表示不限制。
+    include_clusters: [] # 可选人工预览的 BioSFIB Cluster 编号；不会改变阈值，CSV 会将其标记为 manual_include。
+    include_all_positive_matches: false # true 时绘制所有 overlap>0 的 Hungarian 配对；未通过阈值者在 CSV 标记为 all_positive_match。
+  colors:
+    cluster_color_mapping_json: null # 可选现有 cluster-to-color JSON；null 时使用下方备用色板。
+    cluster_color_overrides: {} # 按 BioSFIB Cluster 编号强制覆盖颜色；用于修正与灰色背景对比不足的现有颜色。
+    fallback_palette: tab20 # JSON 未提供或缺少簇颜色时使用的 Matplotlib 离散色板名称，也可写十六进制颜色列表。
+    background: '#EEEEEE' # 每个空间 panel 中非当前区域 spot 的浅灰背景色；足够浅以区分现有地图中的灰色组织类别。
+    minimum_background_contrast: 1.65 # 前景色相对灰色背景的最低对比度；过浅颜色仅沿原色相自动加深，高对比颜色保持不变。
+    agreement:
+      true_positive: '#2CA25F' # Agreement 行中预测与真值共同覆盖 spot 的颜色。
+      false_positive: '#F28E2B' # Agreement 行中仅预测覆盖 spot 的颜色。
+      false_negative: '#3B82C4' # Agreement 行中仅真值覆盖 spot 的颜色。
+  spatial:
+    invert_y: false # 是否翻转绘图 Y 轴；只改变图像方向，不改变原始 H5AD。
+    display_target_span: null # 可选显示坐标跨度 [X, Y]；用于跨切片统一组织在方框中的物理占比，null 保持原始跨度。
+    coordinate_padding_fraction: 0.02 # 空间坐标边界外增加的留白比例。
+    transform:
+      flip_horizontal: false # 是否先围绕坐标中心左右翻转。
+      flip_vertical: false # 是否在左右翻转后围绕坐标中心上下翻转。
+      rotate_cw: 0 # 最后顺时针旋转角度；仅允许 0、90、180、270。
+  outputs:
+    score_csv: biosfib_domain_matching_scores.csv # 全部 BioSFIB 簇的配对、分数、阈值判断和筛选结果表名。
+    contingency_csv: biosfib_domain_contingency_counts.csv # BioSFIB 簇×真实组织的原始重叠 spot 列联表名。
+    figure_pdf: biosfib_well_recovered_domains.pdf # 入选空间域的论文图 PDF 文件名。
+  plot:
+    panel_rows: [truth, prediction] # PDF 从上到下的行；当前仅绘制真值与 BioSFIB，不绘制 Agreement。
+    row_labels:
+      truth: Ground truth # truth 行左侧显示名称。
+      prediction: BioSFIB # prediction 行左侧显示名称。
+      agreement: Agreement # agreement 误差分解行左侧显示名称。
+    agreement_legend_labels:
+      true_positive: True positive # 预测与真值共同覆盖 spot 的图例文字。
+      false_positive: False positive # 预测额外覆盖 spot 的图例文字。
+      false_negative: False negative # 真实区域中未被预测覆盖 spot 的图例文字。
+    figure_size: null # 整图宽高 [width, height]，单位英寸；null 时根据空间域数量自动计算。
+    panel_width: 2.05 # 自动画布模式下每个空间域列占用的宽度，单位英寸。
+    panel_height: 1.95 # 自动画布模式下每一行占用的高度，单位英寸。
+    minimum_figure_width: 6.4 # 自动画布模式下整图的最小宽度，单位英寸。
+    extra_vertical_space: 0.35 # 自动画布模式下为单行组织名称标题预留的额外高度，单位英寸。
+    block_extra_vertical_space: 0.45 # 多个域分块排列时，每增加一块额外预留的纵向标题空间，单位英寸。
+    max_columns_per_block: 6 # 每个横向分块最多放置的空间域列数；超过后自动在下方开始新的三行分块，null 表示不换行。
+    margin_left: 0.105 # Matplotlib 画布左边距比例；为竖排的行名称留出空间。
+    margin_right: 0.99 # Matplotlib 画布右边距比例。
+    margin_top: 0.92 # Matplotlib 画布上边距比例；为单行组织名称标题留出空间。
+    margin_bottom: 0.035 # Matplotlib 画布下边距比例；当前无 Agreement 图例，因此只保留少量留白。
+    column_spacing: 0.08 # 不同空间域列之间的水平间距比例。
+    row_spacing: 0.10 # Ground truth、BioSFIB 及不同分块之间的垂直间距比例。
+    font_family: Arial # PDF 中优先使用的字体；缺失时依次回退 Helvetica 与 DejaVu Sans。
+    font_size: 8.0 # 全局基础字号，单位 pt。
+    title_font_size: 12.0 # 每列真实组织名称标题字号，单位 pt。
+    title_wrap_width: 22 # 组织名称超过该字符宽度时按空格自动换行；null 表示完全不换行。
+    title_pad: 4.0 # 顶部标题与 panel 外框的距离，单位 pt。
+    title_line_spacing: 1.05 # 两行标题的行距倍数。
+    row_label_font_size: 12.0 # 左侧 Ground truth、BioSFIB、Agreement 行名的字号，单位 pt。
+    row_label_x: -0.13 # 行名相对第一个 panel 左边界的 X 位置；负数表示位于框外。
+    row_label_rotation: 90 # 行名旋转角度；90 表示竖排以节省横向空间。
+    show_cluster_id_in_title: false # 是否在标题中显示 BioSFIB 原始 Cluster 编号；当前关闭，仅保留真实组织名称。
+    show_scores_in_title: false # 是否在标题中显示 F1 与 IoU；当前关闭，分数仍完整保存在审计 CSV。
+    score_decimals: 3 # 标题中 F1 与 IoU 保留的小数位数。
+    marker: o # 所有 spot 使用的 Matplotlib marker 形状。
+    background_point_size: 8.0 # 灰色背景 spot 的散点面积。
+    foreground_point_size: 10.0 # 真值、预测和误差 spot 的散点面积。
+    background_alpha: 1.0 # 灰色背景 spot 的透明度，范围 0–1。
+    foreground_alpha: 1.0 # 真值、预测和误差 spot 的透明度，范围 0–1。
+    panel_background: '#FFFFFF' # 每个 panel 的背景色。
+    show_frame: true # 是否显示每个 Spatial panel 的矩形外框。
+    frame_color: '#222222' # Spatial panel 外框颜色。
+    frame_linewidth: 0.75 # Spatial panel 外框线宽，单位 pt。
+    show_agreement_legend: false # 是否显示 TP、FP、FN 图例；当前未绘制 Agreement 行，因此关闭。
+    legend_y: 0.012 # Agreement 图例在整张画布中的纵向位置。
+    legend_font_size: 8.0 # Agreement 图例文字字号，单位 pt。
+    legend_marker_size: 5.5 # Agreement 图例圆点大小，单位 pt。
+    legend_handletextpad: 0.35 # Agreement 图例圆点与文字之间的间距。
+    legend_columnspacing: 1.2 # Agreement 图例三个条目之间的列间距。
+    dpi: 600 # PDF 中若出现栅格元素时的输出 DPI；当前散点和文字保持矢量。
+    save_pad_inches: 0.03 # 保存 PDF 时紧边界之外保留的额外英寸数。
+
+# MISAR 数字真值编码到真实组织名称的统一显示映射；仅影响标题，不修改 H5AD 或匹配计算。
+misar_truth_aliases: &misar_truth_aliases
+  '0': Unannotated # 未可靠注释的区域；各 MISAR 分析会在匹配前排除编号 0。
+  '1': Hindbrain # Basal_plate_of_hindbrain 的论文图简写。
+  '2': Primary_brain_1 # Primary brain 区域 1。
+  '3': DPallv # Dorsal pallium ventral region。
+  '4': Cartilage_1 # Cartilage 区域 1。
+  '5': Muscle # Muscle 区域。
+  '6': Cartilage_2 # Cartilage 区域 2。
+  '7': Cartilage_3 # Cartilage 区域 3。
+  '8': Mesenchyme # Mesenchyme 区域。
+  '9': Cartilage_4 # Cartilage 区域 4。
+  '10': Thalamus # Thalamus 区域。
+  '11': DPallm # Dorsal pallium medial region。
+  '12': Primary_brain_2 # Primary brain 区域 2。
+  '13': Diencephalon # Diencephalon_and_hindbrain 的论文图简写。
+  '14': Midbrain # Midbrain 区域。
+  '15': Subpallium_1 # Subpallium 区域 1。
+  '16': Subpallium_2 # Subpallium 区域 2。
+
+# Human lymph 真值名称的统一显示映射；只修正大小写、单复数和源文件中的拼写错误。
+lymph_truth_aliases: &lymph_truth_aliases
+  medulla Cords: medulla cords # 统一 Lymph 3 的大小写。
+  Medullary Chords: Medullary cords # 统一 D1 的大小写。
+  Medullary Sinus: Medullary sinus # 统一 D1 的大小写。
+  Adipose Tlssue: Adipose tissue # 修正 D1 源注释中的 Tlssue 拼写错误。
+  B cell Follicle: B cell follicle # 统一 D1 的大小写。
+  Cortex: Cortex # 保留 D1 的真实组织名称。
+  Capsule: Capsule # 保留 D1 的真实组织名称。
+  Marginal Sinus: Marginal sinus # 统一 D1 的大小写。
+  Connective Tissue: Connective tissue # 统一 D1 的大小写。
+
+# Human tonsil 跨切片显示名称统一映射；不合并类别，只统一连接符与大小写。
+tonsil_truth_aliases: &tonsil_truth_aliases
+  connective and epithelial tissue: connective & epithelial tissue # 与 Slice 1/2 的名称保持一致。
+  germinal Center: germinal center # 与 Slice 1/2 的名称保持一致。
+
+analyses:
+  misar_e18_5_s1:
+    input_h5ad: misar/BioSFIB/misar_e18-5-s1/misar_e18-5-s1_BioSFIB_result.h5ad # E18.5 S1 的 BioSFIB 聚类、可靠组织真值和空间坐标输入。
+    truth_key: reference_label # 使用统一 MISAR 数字真值列，再通过 label_aliases 显示真实组织名称。
+    output_dir: results/benchmark_figures/well_recovered_domains/misar/misar_e18_5_s1 # 本分析 PDF 与审计 CSV 的独立输出目录。
+    colors:
+      cluster_color_mapping_json: results/benchmark_figures/maps/color_mappings/misar/pca25_truth_k/misar_e18-5-s1/BioSFIB_cluster_colors.json # 复用现有地图的 BioSFIB cluster 颜色，保证论文中配色一致。
+      cluster_color_overrides:
+        '1': '#0072B2' # Diencephalon：用高对比蓝替换现有浅灰色；真值与 BioSFIB 两行同步使用。
+        '4': '#B79F00' # Midbrain：用较深橄榄黄色替换偏浅的现有颜色。
+        '7': '#009E73' # Subpallium_2：用高对比绿色替换过浅青色。
+        '9': '#D55E00' # DPallm：作为阈值外的第六名预览域，使用高对比朱红色。
+        '11': '#6A3D9A' # DPallv：用清晰紫色替换现有过浅蓝色，避免与浅灰背景混淆。
+        '13': '#AA4499' # Mesenchyme：用较深品红色替换过浅紫色。
+    selection:
+      mode: top_n # 本切片按 F1 排名自动选择前若干个有效真值配对域，适应不同切片的绝对聚类质量。
+      top_n: 6 # 自动绘制 F1 分数最高的 6 个空间域。
+      include_clusters: [] # 可选人工追加的 BioSFIB Cluster 编号；当前不追加。
+      include_all_positive_matches: false # 当前只绘制 F1 前六个，不纳入其余正匹配域。
+    matching:
+      ignored_truth_values: ['nan', 'na', 'none', '', '0'] # 排除无效值和 MISAR 未注释编号 0。
+      label_aliases: *misar_truth_aliases # 将数字真值编码显示为真实组织名称。
+
+  misar_e11_0_s1:
+    input_h5ad: misar/BioSFIB/misar_e11_0-s1/misar_e11_0-s1_BioSFIB_result.h5ad # E11.0 S1 的 BioSFIB 聚类、真值和空间坐标输入。
+    truth_key: reference_label # 使用统一 MISAR 数字真值列。
+    output_dir: results/benchmark_figures/well_recovered_domains/misar/misar_e11_0_s1 # 本切片 PDF 与审计 CSV 的独立输出目录。
+    colors:
+      cluster_color_mapping_json: results/benchmark_figures/maps/color_mappings/misar/pca25_truth_k/misar_e11_0-s1/BioSFIB_cluster_colors.json # 复用现有地图的 BioSFIB 聚类颜色。
+    matching:
+      ignored_truth_values: ['nan', 'na', 'none', '', '0'] # 排除无效值和未注释编号 0。
+      label_aliases: *misar_truth_aliases # 将数字真值编码显示为真实组织名称。
+
+  misar_e11_0_s2:
+    input_h5ad: misar/BioSFIB/misar_e11_0-s2/misar_e11_0-s2_BioSFIB_result.h5ad # E11.0 S2 的 BioSFIB 聚类、真值和空间坐标输入。
+    truth_key: reference_label # S2 没有文字注释列，因此使用统一数字真值列。
+    output_dir: results/benchmark_figures/well_recovered_domains/misar/misar_e11_0_s2 # 本切片 PDF 与审计 CSV 的独立输出目录。
+    colors:
+      cluster_color_mapping_json: results/benchmark_figures/maps/color_mappings/misar/pca25_truth_k/misar_e11_0-s2/BioSFIB_cluster_colors.json # 复用现有地图的 BioSFIB 聚类颜色。
+    matching:
+      ignored_truth_values: ['nan', 'na', 'none', '', '0'] # 排除无效值和未注释编号 0。
+      label_aliases: *misar_truth_aliases # 将数字真值编码显示为真实组织名称。
+
+  misar_e13_5_s1:
+    input_h5ad: misar/BioSFIB/misar_e13_5-s1/misar_e13_5-s1_BioSFIB_result.h5ad # E13.5 S1 的 BioSFIB 聚类、真值和空间坐标输入。
+    truth_key: reference_label # 使用统一 MISAR 数字真值列。
+    output_dir: results/benchmark_figures/well_recovered_domains/misar/misar_e13_5_s1 # 本切片 PDF 与审计 CSV 的独立输出目录。
+    colors:
+      cluster_color_mapping_json: results/benchmark_figures/maps/color_mappings/misar/pca25_truth_k/misar_e13_5-s1/BioSFIB_cluster_colors.json # 复用现有地图的 BioSFIB 聚类颜色。
+    matching:
+      ignored_truth_values: ['nan', 'na', 'none', '', '0'] # 排除无效值和未注释编号 0。
+      label_aliases: *misar_truth_aliases # 将数字真值编码显示为真实组织名称。
+
+  misar_e13_5_s2:
+    input_h5ad: misar/BioSFIB/misar_e13_5-s2/misar_e13_5-s2_BioSFIB_result.h5ad # E13.5 S2 的 BioSFIB 聚类、真值和空间坐标输入。
+    truth_key: reference_label # S2 使用统一数字真值列。
+    output_dir: results/benchmark_figures/well_recovered_domains/misar/misar_e13_5_s2 # 本切片 PDF 与审计 CSV 的独立输出目录。
+    colors:
+      cluster_color_mapping_json: results/benchmark_figures/maps/color_mappings/misar/pca25_truth_k/misar_e13_5-s2/BioSFIB_cluster_colors.json # 复用现有地图的 BioSFIB 聚类颜色。
+    matching:
+      ignored_truth_values: ['nan', 'na', 'none', '', '0'] # 排除无效值和未注释编号 0。
+      label_aliases: *misar_truth_aliases # 将数字真值编码显示为真实组织名称。
+
+  misar_e15_5_s1:
+    input_h5ad: misar/BioSFIB/misar_e15-5-s1/misar_e15-5-s1_BioSFIB_result.h5ad # E15.5 S1 的 BioSFIB 聚类、真值和空间坐标输入。
+    truth_key: reference_label # 使用统一 MISAR 数字真值列。
+    output_dir: results/benchmark_figures/well_recovered_domains/misar/misar_e15_5_s1 # 本切片 PDF 与审计 CSV 的独立输出目录。
+    colors:
+      cluster_color_mapping_json: results/benchmark_figures/maps/color_mappings/misar/pca25_truth_k/misar_e15-5-s1/BioSFIB_cluster_colors.json # 复用现有地图的 BioSFIB 聚类颜色。
+    matching:
+      ignored_truth_values: ['nan', 'na', 'none', '', '0'] # 排除无效值和未注释编号 0。
+      label_aliases: *misar_truth_aliases # 将数字真值编码显示为真实组织名称。
+
+  misar_e15_5_s2:
+    input_h5ad: misar/BioSFIB/misar_e15-5-s2/misar_e15-5-s2_BioSFIB_result.h5ad # E15.5 S2 的 BioSFIB 聚类、真值和空间坐标输入。
+    truth_key: reference_label # S2 使用统一数字真值列。
+    output_dir: results/benchmark_figures/well_recovered_domains/misar/misar_e15_5_s2 # 本切片 PDF 与审计 CSV 的独立输出目录。
+    colors:
+      cluster_color_mapping_json: results/benchmark_figures/maps/color_mappings/misar/pca25_truth_k/misar_e15-5-s2/BioSFIB_cluster_colors.json # 复用现有地图的 BioSFIB 聚类颜色。
+    matching:
+      ignored_truth_values: ['nan', 'na', 'none', '', '0'] # 排除无效值和未注释编号 0。
+      label_aliases: *misar_truth_aliases # 将数字真值编码显示为真实组织名称。
+
+  misar_e18_5_s2:
+    input_h5ad: misar/BioSFIB/misar_e18-5-s2/misar_e18-5-s2_BioSFIB_result.h5ad # E18.5 S2 的 BioSFIB 聚类、真值和空间坐标输入。
+    truth_key: reference_label # S2 使用统一数字真值列。
+    output_dir: results/benchmark_figures/well_recovered_domains/misar/misar_e18_5_s2 # 本切片 PDF 与审计 CSV 的独立输出目录。
+    colors:
+      cluster_color_mapping_json: results/benchmark_figures/maps/color_mappings/misar/pca25_truth_k/misar_e18-5-s2/BioSFIB_cluster_colors.json # 复用现有地图的 BioSFIB 聚类颜色。
+    matching:
+      ignored_truth_values: ['nan', 'na', 'none', '', '0'] # 排除无效值和未注释编号 0。
+      label_aliases: *misar_truth_aliases # 将数字真值编码显示为真实组织名称。
+
+  p22_atac:
+    input_h5ad: mouse_brain_p22/BioSFIB/mouse_brain_ATAC/mouse_brain_ATAC_BioSFIB_result.h5ad # P22 ATAC 的 BioSFIB 聚类、可靠真值和空间坐标输入。
+    truth_key: reference_label # P22 四个切片中仅 ATAC 当前具有可靠独立真值。
+    output_dir: results/benchmark_figures/well_recovered_domains/mouse_brain_p22/mouse_brain_ATAC # P22 ATAC PDF 与审计 CSV 的独立输出目录。
+    colors:
+      cluster_color_mapping_json: results/benchmark_figures/maps/color_mappings/mouse_brain_p22/pca25_truth_k/mouse_brain_ATAC/BioSFIB_cluster_colors.json # 复用 P22 ATAC 地图的 BioSFIB 聚类颜色。
+    matching:
+      label_aliases:
+        1_others: Others # 将源文件中的 1_others 简化为 Others，仅改变标题文字。
+
+  human_lymph1:
+    input_h5ad: human_lymph/BioSFIB/human_lymph1/human_lymph1_BioSFIB_result.h5ad # Human lymph 1 的 BioSFIB 聚类、真值和空间坐标输入。
+    truth_key: reference_label # 使用统一真实组织标签列。
+    output_dir: results/benchmark_figures/well_recovered_domains/human_lymph/human_lymph1 # 本切片 PDF 与审计 CSV 的独立输出目录。
+    colors:
+      cluster_color_mapping_json: results/benchmark_figures/maps/color_mappings/human_lymph/pca20_truth_k/human_lymph1/BioSFIB_cluster_colors.json # 复用现有地图的 BioSFIB 聚类颜色。
+    matching:
+      label_aliases: *lymph_truth_aliases # 统一组织名称显示，不改变真值类别。
+
+  human_lymph2:
+    input_h5ad: human_lymph/BioSFIB/human_lymph2/human_lymph2_BioSFIB_result.h5ad # Human lymph 2 的 BioSFIB 聚类、真值和空间坐标输入。
+    truth_key: reference_label # 使用统一真实组织标签列。
+    output_dir: results/benchmark_figures/well_recovered_domains/human_lymph/human_lymph2 # 本切片 PDF 与审计 CSV 的独立输出目录。
+    colors:
+      cluster_color_mapping_json: results/benchmark_figures/maps/color_mappings/human_lymph/pca20_truth_k/human_lymph2/BioSFIB_cluster_colors.json # 复用现有地图的 BioSFIB 聚类颜色。
+    matching:
+      label_aliases: *lymph_truth_aliases # 统一组织名称显示，不改变真值类别。
+
+  human_lymph3:
+    input_h5ad: human_lymph/BioSFIB/human_lymph3/human_lymph3_BioSFIB_result.h5ad # Human lymph 3 的 BioSFIB 聚类、真值和空间坐标输入。
+    truth_key: reference_label # 使用统一真实组织标签列。
+    output_dir: results/benchmark_figures/well_recovered_domains/human_lymph/human_lymph3 # 本切片 PDF 与审计 CSV 的独立输出目录。
+    colors:
+      cluster_color_mapping_json: results/benchmark_figures/maps/color_mappings/human_lymph/pca20_truth_k/human_lymph3/BioSFIB_cluster_colors.json # 复用现有地图的 BioSFIB 聚类颜色。
+    matching:
+      label_aliases: *lymph_truth_aliases # 统一组织名称显示，不改变真值类别。
+
+  human_lymph_a1:
+    input_h5ad: human_lymph/BioSFIB/human_lymph_A1/human_lymph_A1_BioSFIB_result.h5ad # Human lymph A1 的 BioSFIB 聚类、真值和空间坐标输入。
+    truth_key: reference_label # 使用统一真实组织标签列。
+    output_dir: results/benchmark_figures/well_recovered_domains/human_lymph/human_lymph_A1 # 本切片 PDF 与审计 CSV 的独立输出目录。
+    colors:
+      cluster_color_mapping_json: results/benchmark_figures/maps/color_mappings/human_lymph/pca20_truth_k/human_lymph_A1/BioSFIB_cluster_colors.json # 复用现有地图的 BioSFIB 聚类颜色。
+    matching:
+      label_aliases: *lymph_truth_aliases # 统一组织名称显示，不改变真值类别。
+
+  human_lymph_d1:
+    input_h5ad: human_lymph/BioSFIB/human_lymph_D1/human_lymph_D1_BioSFIB_result.h5ad # Human lymph D1 的 BioSFIB 聚类、真值和空间坐标输入。
+    truth_key: reference_label # 使用统一真实组织标签列。
+    output_dir: results/benchmark_figures/well_recovered_domains/human_lymph/human_lymph_D1 # 本切片 PDF 与审计 CSV 的独立输出目录。
+    colors:
+      cluster_color_mapping_json: results/benchmark_figures/maps/color_mappings/human_lymph/pca20_truth_k/human_lymph_D1/BioSFIB_cluster_colors.json # 复用现有地图的 BioSFIB 聚类颜色。
+    matching:
+      ignored_truth_values: ['nan', 'na', 'none', '', 'exclude'] # 排除 D1 中非组织类别 Exclude。
+      label_aliases: *lymph_truth_aliases # 修正显示大小写和源注释拼写，不改变匹配。
+
+  human_tonsil_slice1:
+    input_h5ad: human_tonsil/BioSFIB/slice1/slice1_BioSFIB_result.h5ad # Human tonsil Slice 1 的 BioSFIB 聚类、四类真值和空间坐标输入。
+    truth_key: reference_label # 外部指标使用的四类真实组织标签列。
+    output_dir: results/benchmark_figures/well_recovered_domains/human_tonsil/slice1 # 本切片 PDF 与审计 CSV 的独立输出目录。
+    colors:
+      cluster_color_mapping_json: results/benchmark_figures/maps/color_mappings/human_tonsil/tonsil_k6_primary/slice1/BioSFIB_cluster_colors.json # 复用 Tonsil K=6 地图的 BioSFIB 聚类颜色。
+    matching:
+      label_aliases: *tonsil_truth_aliases # 统一跨切片组织名称显示。
+    spatial:
+      display_target_span: [881.0, 835.0] # 与现有 maps 一致，将 Slice 1 的显示跨度统一到 Slice 3；不修改 H5AD。
+
+  human_tonsil_slice2:
+    input_h5ad: human_tonsil/BioSFIB/slice2/slice2_BioSFIB_result.h5ad # Human tonsil Slice 2 的 BioSFIB 聚类、四类真值和空间坐标输入。
+    truth_key: reference_label # 外部指标使用的四类真实组织标签列。
+    output_dir: results/benchmark_figures/well_recovered_domains/human_tonsil/slice2 # 本切片 PDF 与审计 CSV 的独立输出目录。
+    colors:
+      cluster_color_mapping_json: results/benchmark_figures/maps/color_mappings/human_tonsil/tonsil_k6_primary/slice2/BioSFIB_cluster_colors.json # 复用 Tonsil K=6 地图的 BioSFIB 聚类颜色。
+    matching:
+      label_aliases: *tonsil_truth_aliases # 统一跨切片组织名称显示。
+    spatial:
+      display_target_span: [881.0, 835.0] # 与现有 maps 一致，将 Slice 2 的显示跨度统一到 Slice 3；不修改 H5AD。
+
+  human_tonsil_slice3:
+    input_h5ad: human_tonsil/BioSFIB/slice3/slice3_BioSFIB_result.h5ad # Human tonsil Slice 3 的 BioSFIB 聚类、四类真值和空间坐标输入。
+    truth_key: reference_label # 外部指标使用的四类真实组织标签列。
+    output_dir: results/benchmark_figures/well_recovered_domains/human_tonsil/slice3 # 本切片 PDF 与审计 CSV 的独立输出目录。
+    colors:
+      cluster_color_mapping_json: results/benchmark_figures/maps/color_mappings/human_tonsil/tonsil_k6_primary/slice3/BioSFIB_cluster_colors.json # 复用 Tonsil K=6 地图的 BioSFIB 聚类颜色。
+    matching:
+      label_aliases: *tonsil_truth_aliases # 统一跨切片组织名称显示。
+
+# 以下切片当前不能按本图标准运行：缺少独立真实组织标签，不能计算 Hungarian/F1，也不能绘制 Ground truth 行。
+unavailable_analyses:
+  p22_h3k27ac: H3K27ac 的真值已因注释不可靠而删除 # 不得从历史文件恢复或用 BioSFIB 聚类替代。
+  p22_h3k27me3: H3K27me3 当前没有独立真实组织标签 # 只能绘制原始聚类图，不能生成 recovered-domain 图。
+  p22_h3k4me3: H3K4me3 当前没有独立真实组织标签 # 只能绘制原始聚类图，不能生成 recovered-domain 图。
+  mouse_spleen1: Spleen 1 当前没有独立真实组织标签 # official_cluster 与 BioSFIB 相同，不能充当真值。
+  mouse_spleen2: Spleen 2 当前没有独立真实组织标签 # official_cluster 与 BioSFIB 相同，不能充当真值。
+  mouse_thymus1: Thymus 1 当前没有独立真实组织标签 # official_cluster 与 BioSFIB 相同，不能充当真值。
+  mouse_thymus2: Thymus 2 当前没有独立真实组织标签 # official_cluster 与 BioSFIB 相同，不能充当真值。
+  mouse_thymus3: Thymus 3 当前没有独立真实组织标签 # official_cluster 与 BioSFIB 相同，不能充当真值。
+  mouse_thymus4: Thymus 4 当前没有独立真实组织标签 # official_cluster 与 BioSFIB 相同，不能充当真值。

@@ -1,0 +1,103 @@
+# BioSFIB 全部空间域总览配置；主要用于无真值切片，也可为有真值切片生成完整聚类总览。
+# 该图仅用于探索和后续筛选，不计算 F1/IoU，也不会把聚类编号解释为真实组织名称。
+
+default_analysis: p22_h3k27ac # 未提供 --analysis 或 --all 时默认运行的切片。
+
+defaults:
+  cluster_key: BioSFIB # BioSFIB 原始 mclust 聚类所在的 .obs 列名。
+  spatial_key: spatial # 用于绘制空间位置的 .obsm 键名。
+  ignored_cluster_values: ['nan', 'na', 'none', ''] # 聚类列中视为无效的文本；这些 spot 不单独形成 panel。
+  expected_clusters: null # 预期聚类数；具体切片覆盖，实际数量不一致时立即报错。
+  output_pdf: biosfib_all_domains.pdf # 每个切片的全部聚类总览 PDF 文件名。
+  colors:
+    cluster_color_mapping_json: null # 现有 BioSFIB cluster-to-color JSON 路径；具体切片必须设置。
+    cluster_color_overrides: {} # 可按聚类编号覆盖个别颜色；当前默认不覆盖。
+    fallback_palette: tab20 # 颜色映射缺少聚类时使用的 Matplotlib 离散备用色板。
+    background: '#EEEEEE' # 非当前聚类 spot 的浅灰背景颜色。
+    minimum_background_contrast: 1.65 # 前景色相对背景的最低对比度；过浅颜色只沿原色相自动加深。
+  spatial:
+    invert_y: false # 是否翻转最终绘图的 Y 轴；只影响显示，不修改 H5AD。
+    display_target_span: null # 可选显示跨度 [X, Y]；null 保持变换后的原始跨度。
+    coordinate_padding_fraction: 0.02 # 空间点位边界外的留白比例。
+    transform:
+      flip_horizontal: false # 是否先围绕中心左右翻转空间坐标。
+      flip_vertical: false # 是否在左右翻转后围绕中心上下翻转空间坐标。
+      rotate_cw: 0 # 最后顺时针旋转的角度；使用 0、90、180 或 270。
+  plot:
+    columns: 6 # 每行最多排列的聚类 panel 数；16/18 类会自动换成三行。
+    figure_size: null # 整图尺寸 [宽, 高]，单位英寸；null 时按 panel 数自动计算。
+    panel_width: 2.05 # 自动尺寸下每个聚类 panel 占用的宽度，单位英寸。
+    panel_height: 1.95 # 自动尺寸下每行 panel 占用的高度，单位英寸。
+    minimum_figure_width: 6.4 # 自动尺寸下 PDF 的最小宽度，单位英寸。
+    extra_vertical_space: 0.30 # 为各行标题和外边距预留的额外高度，单位英寸。
+    margin_left: 0.025 # Matplotlib 画布左边距比例。
+    margin_right: 0.995 # Matplotlib 画布右边距比例。
+    margin_top: 0.965 # Matplotlib 画布上边距比例，为第一行标题留出空间。
+    margin_bottom: 0.025 # Matplotlib 画布下边距比例。
+    column_spacing: 0.10 # 相邻聚类 panel 的水平间距比例。
+    row_spacing: 0.20 # 相邻聚类 panel 行的垂直间距比例。
+    font_family: Arial # PDF 中优先使用的字体；缺失时回退 Helvetica 或 DejaVu Sans。
+    font_size: 8.0 # 全局基础字号，单位 pt。
+    title_font_size: 12.0 # 每个 Cluster 标题字号，单位 pt。
+    title_pad: 3.5 # Cluster 标题与 panel 外框的距离，单位 pt。
+    cluster_title_prefix: Cluster # 聚类编号前的标题文字；当前显示为 Cluster 1、Cluster 2 等。
+    marker: o # spot 使用的 Matplotlib marker 形状。
+    background_point_size: 4.0 # 灰色背景 spot 的散点面积；P22 点位密集，因此小于有真值图。
+    foreground_point_size: 6.0 # 当前高亮聚类 spot 的散点面积。
+    background_alpha: 1.0 # 灰色背景 spot 的透明度，范围 0–1。
+    foreground_alpha: 1.0 # 高亮聚类 spot 的透明度，范围 0–1。
+    panel_background: '#FFFFFF' # 每个 panel 的白色背景。
+    show_frame: true # 是否显示每个空间 panel 的矩形外框。
+    frame_color: '#222222' # 空间 panel 外框颜色。
+    frame_linewidth: 0.75 # 空间 panel 外框线宽，单位 pt。
+    dpi: 600 # PDF 中若出现栅格元素时的输出 DPI；散点和文字保持矢量。
+    save_pad_inches: 0.03 # 紧边界之外额外保留的英寸数。
+
+analyses:
+  p22_atac:
+    input_h5ad: mouse_brain_p22/BioSFIB/mouse_brain_ATAC/mouse_brain_ATAC_BioSFIB_result.h5ad # ATAC 的 BioSFIB 聚类和空间坐标输入。
+    expected_clusters: 18 # ATAC 按当前 benchmark 设定应包含 18 个聚类。
+    output_dir: results/benchmark_figures/all_domains/mouse_brain_p22/mouse_brain_ATAC # ATAC 全部空间域 PDF 的独立输出目录。
+    colors:
+      cluster_color_mapping_json: results/benchmark_figures/maps/color_mappings/mouse_brain_p22/pca25_truth_k/mouse_brain_ATAC/BioSFIB_cluster_colors.json # 复用现有 ATAC 地图的 BioSFIB 聚类颜色。
+    spatial:
+      transform:
+        flip_horizontal: false # ATAC 作为方向基准，不执行左右翻转。
+        flip_vertical: false # ATAC 作为方向基准，不执行上下翻转。
+        rotate_cw: 0 # ATAC 保持当前基准方向，不额外旋转。
+
+  p22_h3k27ac:
+    input_h5ad: mouse_brain_p22/BioSFIB/mouse_brain_H3K27ac/mouse_brain_H3K27ac_BioSFIB_result.h5ad # H3K27ac 的 BioSFIB 聚类和空间坐标输入。
+    expected_clusters: 16 # H3K27ac 按当前 benchmark 设定应包含 16 个聚类。
+    output_dir: results/benchmark_figures/all_domains/mouse_brain_p22/mouse_brain_H3K27ac # H3K27ac 全部空间域 PDF 的独立输出目录。
+    colors:
+      cluster_color_mapping_json: results/benchmark_figures/maps/color_mappings/mouse_brain_p22/pca25_truth_k/mouse_brain_H3K27ac/BioSFIB_cluster_colors.json # 复用现有 H3K27ac 地图的 BioSFIB 聚类颜色。
+    spatial:
+      transform:
+        flip_horizontal: true # 按既有地图方向先左右翻转。
+        flip_vertical: true # 再上下翻转，使最终方向与 ATAC 基准一致。
+        rotate_cw: 270 # 最后顺时针旋转 270°，复用已经验证的地图方向参数。
+
+  p22_h3k27me3:
+    input_h5ad: mouse_brain_p22/BioSFIB/mouse_brain_H3K27me3/mouse_brain_H3K27me3_BioSFIB_result.h5ad # H3K27me3 的 BioSFIB 聚类和空间坐标输入。
+    expected_clusters: 18 # H3K27me3 按当前 benchmark 设定应包含 18 个聚类。
+    output_dir: results/benchmark_figures/all_domains/mouse_brain_p22/mouse_brain_H3K27me3 # H3K27me3 全部空间域 PDF 的独立输出目录。
+    colors:
+      cluster_color_mapping_json: results/benchmark_figures/maps/color_mappings/mouse_brain_p22/pca25_truth_k/mouse_brain_H3K27me3/BioSFIB_cluster_colors.json # 复用现有 H3K27me3 地图的 BioSFIB 聚类颜色。
+    spatial:
+      transform:
+        flip_horizontal: true # 按既有地图方向先左右翻转。
+        flip_vertical: false # H3K27me3 不执行额外上下翻转。
+        rotate_cw: 90 # 最后顺时针旋转 90°，与 ATAC 基准方向一致。
+
+  p22_h3k4me3:
+    input_h5ad: mouse_brain_p22/BioSFIB/mouse_brain_H3K4me3/mouse_brain_H3K4me3_BioSFIB_result.h5ad # H3K4me3 的 BioSFIB 聚类和空间坐标输入。
+    expected_clusters: 18 # H3K4me3 按当前 benchmark 设定应包含 18 个聚类。
+    output_dir: results/benchmark_figures/all_domains/mouse_brain_p22/mouse_brain_H3K4me3 # H3K4me3 全部空间域 PDF 的独立输出目录。
+    colors:
+      cluster_color_mapping_json: results/benchmark_figures/maps/color_mappings/mouse_brain_p22/pca25_truth_k/mouse_brain_H3K4me3/BioSFIB_cluster_colors.json # 复用现有 H3K4me3 地图的 BioSFIB 聚类颜色。
+    spatial:
+      transform:
+        flip_horizontal: false # H3K4me3 不执行左右翻转。
+        flip_vertical: false # H3K4me3 不执行上下翻转。
+        rotate_cw: 90 # 最后顺时针旋转 90°，与 ATAC 基准方向一致。

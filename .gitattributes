@@ -1,0 +1,2 @@
+# Preserve published source-data bytes for the SHA256 provenance manifest.
+source_data/** -text whitespace=trailing-space,space-before-tab,cr-at-eol
