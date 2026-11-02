@@ -1,0 +1,21 @@
+# Install PyTorch appropriate for your CUDA/CPU environment first.
+torch
+torch-geometric
+numpy
+scipy
+pandas
+scikit-learn
+scanpy
+anndata
+squidpy
+scikit-misc
+matplotlib
+shapely
+h5py
+PyYAML
+joblib
+tqdm
+igraph
+leidenalg
+# The evaluator uses the rpy2 3.5 numpy conversion interface.
+rpy2>=3.5,<3.6

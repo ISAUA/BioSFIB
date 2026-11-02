@@ -1,0 +1,103 @@
+project:
+  name: BioSFIB-SSR-simulation6
+  version: "1.0.0"
+  seed: 42
+  save_dir: "./results/SIMULATION/simulation6/checkpoints/"
+  eval_dir: "./results/SIMULATION/simulation6/predictions/"
+
+tri_modal:
+  enabled: true
+
+eval:
+  checkpoint: ckpt_final.pth
+  n_clusters: 5
+  mclust_pca_dim: 20
+  mclust_model: "EEE"
+  resolution: 0.9
+  moran_k: 6
+  compute_gt_metrics: true
+  fixed_embedding: "z_out"
+  formal_epoch: 600
+
+data:
+  raw_path: "./data/raw/simulation/Simulation6_RNA+ADT+ATAC"
+  processed_path: "./data/processed/simulation/simulation6_tri_modal"
+  files:
+    rna_h5ad: "adata_RNA.h5ad"
+    adt_h5ad: "adata_ADT.h5ad"
+    atac_h5ad: "adata_ATAC.h5ad"
+  parameters:
+    reduce:
+      mode: "cpu"
+      device: "auto"
+      q_offset: 8
+      niter: 3
+    n_top_genes: 1000
+    rna_use_pca: false
+    rna_pca_dim: 128
+    rna_min_cells: 3
+    rna_target_sum: 1e4
+    rna_apply_scale: false
+    rna_input_layer: "X"
+    atac_pca_dim: 128
+    atac_min_cells: 3
+    atac_target_sum: 1e4
+    tfidf_eps: 1e-6
+    n_global_peaks: 1000
+    n_final_peaks: 1000
+    tss_window: 100000
+    knn_k: 9
+    n_freq_components: 512
+    use_rna_similarity_edge_weight: false
+    graph_edge_weight_mode: "spatial_distance"
+    ground_truth_key: null
+    ground_truth_txt: "anno.txt"
+    ground_truth_obsm_key: null
+
+adt_preprocess:
+  use_adt: true
+  adt_data_path: "adata_ADT.h5ad"
+  pipeline: "legacy"
+  input_layer: "X"
+  apply_clr: true
+  apply_scale: false
+  clip_nonnegative: true
+  use_pca: false
+  min_cells: null
+
+model:
+  name: "BioSFINetTri"
+  n_freq_components: 512
+  rna_in_dim: 1000
+  dropout: 0.1
+  sfib_dim: 128
+  sfib_wavelet_t_low: 8.0
+  sfib_wavelet_t_high: 1.5
+  sfib_wavelet_mid_scale_init: 0.10
+  sfib_wavelet_mid_scale_max: 0.25
+  sfib_boundary_slope_init: 0.75
+  sfib_modality_gate_mode: "learned"
+  sfib_modality_gate_rho: 0.5
+  sfib_spatial_residual_enabled: true
+  sfib_spatial_residual_source: "spectral"
+  output_fusion_mode: "ssr"
+
+train:
+  epochs: 600
+  learning_rate: 1e-3
+  learning_rate_low: 1e-4
+  lr_switch_epoch: 400
+  weight_decay: 1e-4
+  gradient_clip: 5.0
+  reconstruction_loss_mode: "feature_std"
+  reconstruction_std_eps: 1e-4
+  reconstruction_std_floor_factor: 0.10
+  alignment_mode: "vicreg"
+  lambda_align: 0.1
+  lambda_rec_rna: 1.0
+  lambda_rec_adt: 1.0
+  lambda_rec_atac: 1.0
+  lambda_residual: 1e-3
+  lambda_spec_recon: 0.01
+  device: "cuda"
+  log_interval: 10

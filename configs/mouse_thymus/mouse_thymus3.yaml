@@ -1,0 +1,75 @@
+project:
+  name: BioSFIB-SSR-mouse_thymus3
+  version: 3.0.0
+  seed: 42
+  save_dir: results/MOUSE_THYMUS/mouse_thymus3/checkpoints/
+  eval_dir: results/MOUSE_THYMUS/mouse_thymus3/predictions/
+
+eval:
+  checkpoint: ckpt_final.pth
+  n_clusters: 8
+  mclust_pca_dim: 20
+  resolution: 0.9
+  moran_k: 6
+  compute_gt_metrics: true
+  fixed_embedding: z_out
+  formal_epoch: 1500
+
+data:
+  raw_path: data/raw/mouse_thymus/mouse_thymus3
+  processed_path: data/processed/rna_adt_v1/scaled/mouse_thymus3
+  files: {rna_h5ad: adata_RNA.h5ad}
+  parameters:
+    reduce: {mode: cpu, device: auto, q_offset: 8, niter: 3}
+    n_top_genes: 3000
+    rna_use_pca: true
+    rna_pca_dim: 128
+    rna_min_cells: 10
+    rna_target_sum: 10000.0
+    rna_apply_scale: true
+    knn_k: 9
+    use_rna_similarity_edge_weight: false
+    graph_edge_weight_mode: spatial_distance
+    ground_truth_key: truth
+
+adt_preprocess:
+  use_adt: true
+  adt_data_path: adata_ADT.h5ad
+  pipeline: seurat_clr_scale
+  min_cells: 50
+  apply_clr: true
+  apply_scale: true
+  use_pca: false
+  nonnegative_policy: error
+  clip_nonnegative: false
+
+model:
+  name: BioSFINet-SSR
+  n_freq_components: null
+  rna_in_dim: 128
+  sfib_dim: 128
+  dropout: 0.1
+  sfib_wavelet_t_low: 8.0
+  sfib_wavelet_t_high: 1.5
+  sfib_wavelet_mid_scale_init: 0.1
+  sfib_wavelet_mid_scale_max: 0.25
+  sfib_boundary_slope_init: 0.75
+  sfib_modality_gate_mode: learned
+  sfib_spatial_residual_enabled: true
+
+train:
+  epochs: 1500
+  learning_rate: 0.001
+  learning_rate_low: 0.0001
+  lr_switch_epoch: 1000
+  weight_decay: 0.0001
+  gradient_clip: 5.0
+  alignment_mode: correspondence
+  lambda_align: 0.1
+  lambda_residual: 0.001
+  lambda_spec_recon: 0.0
+  reconstruction_loss_mode: feature_std
+  reconstruction_std_eps: 0.0001
+  reconstruction_std_floor_factor: 0.1
+  device: cuda
+  log_interval: 10

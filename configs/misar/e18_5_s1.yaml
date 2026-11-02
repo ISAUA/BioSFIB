@@ -1,0 +1,88 @@
+project:
+  name: BioSFIB-SSR-e18_5_s1
+  version: 2.0.0
+  seed: 42
+  save_dir: "./results/MISAR/e18_5_s1/checkpoints/"
+  eval_dir: "./results/MISAR/e18_5_s1/predictions/"
+
+eval:
+  checkpoint: ckpt_final.pth
+  n_clusters: 14
+  mclust_pca_dim: 25
+  resolution: 0.9
+  moran_k: 6
+  plotting:
+    figure_dpi: 180
+    figure_size:
+    - 14
+    - 6
+    panel_size:
+    - 6
+    - 6
+    umap_point_size: 60
+    spatial_point_size: 150
+    alpha: 1.0
+    legend_loc: on data
+    palette_mode: high_contrast
+  fixed_embedding: z_out
+  formal_epoch: 1300
+
+data:
+  raw_path: data/raw/misar/misar_e18-5-s1
+  processed_path: data/processed/misar/misar_e18-5-s1_ssr_128
+  files:
+    rna_h5ad: adata_RNA.h5ad
+    atac_h5ad: adata_Peak.h5ad
+    gtf: ../../gencode.vM23.annotation.gtf.gz
+  parameters:
+    reduce:
+      mode: cpu
+      device: auto
+      q_offset: 8
+      niter: 3
+    n_top_genes: 3000
+    rna_pca_dim: 128
+    rna_min_cells: 3
+    rna_target_sum: 1e4
+    n_global_peaks: 50000
+    n_final_peaks: 30000
+    atac_pca_dim: 128
+    atac_min_cells: 50
+    atac_target_sum: 1e4
+    tfidf_eps: 1e-6
+    tss_window: 150000
+    knn_k: 9
+    use_rna_similarity_edge_weight: false
+    graph_edge_weight_mode: spatial_distance
+    ground_truth_key: Combined_Clusters
+
+model:
+  name: BioSFINet-SSR
+  n_freq_components: null
+  rna_in_dim: 128
+  sfib_dim: 128
+  dropout: 0.1
+  sfib_wavelet_t_low: 8.0
+  sfib_wavelet_t_high: 1.5
+  sfib_wavelet_mid_scale_init: 0.1
+  sfib_wavelet_mid_scale_max: 0.25
+  sfib_boundary_slope_init: 0.75
+  sfib_modality_gate_mode: learned
+  sfib_spatial_residual_enabled: true
+
+train:
+  epochs: 1300
+  learning_rate: 0.001
+  learning_rate_low: 0.0001
+  lr_switch_epoch: 1000
+  weight_decay: 0.0001
+  gradient_clip: 5.0
+  alignment_mode: correspondence
+  lambda_align: 0.1
+  lambda_residual: 0.001
+  lambda_spec_recon: 0.01
+  reconstruction_loss_mode: feature_std
+  reconstruction_std_eps: 0.0001
+  reconstruction_std_floor_factor: 0.1
+  device: cuda
+  log_interval: 10
